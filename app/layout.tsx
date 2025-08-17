@@ -6,6 +6,19 @@ import Script from "next/script";
 export const metadata = {
 	title: "Nawaz Sells Dubai",
 	description: "Invest Smart in Dubai Real Estate with Nawaz",
+	icons: {
+		icon: [
+			{ url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+			{ url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+		],
+		apple: [
+			{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+		],
+		other: [
+			{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#D4AF37" },
+		],
+	},
+	manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
