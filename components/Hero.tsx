@@ -37,17 +37,17 @@ export default function Hero() {
 					>
 						Invest in the future. Prime properties. Zero tax. Global access.
 					</motion.p>
-					<motion.a
-						href="#contact"
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 1, ease: "easeOut", delay: 0.35 }}
-						className="relative inline-block mt-10 px-8 py-3 text-lg font-semibold uppercase tracking-wide"
-					>
-						<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
-						<span className="relative z-10 rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-8 py-3 text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
-							Find your Investment
-						</span>
+											<motion.a
+							href="#contact"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 1, ease: "easeOut", delay: 0.35 }}
+							className="relative inline-block mt-10 group"
+						>
+<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
+													<span className="relative z-10 inline-flex whitespace-nowrap items-center justify-center rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-6 py-3 text-base md:px-8 md:py-3 md:text-lg font-semibold uppercase tracking-wide text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
+								Find your Investment
+							</span>
 					</motion.a>
 				</div>
 			</div>
