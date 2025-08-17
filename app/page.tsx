@@ -1,24 +1,10 @@
 import { siteData } from "@/data/siteData";
+import Hero from "@/components/Hero";
 
 export default function Home() {
 	return (
 		<main className="bg-black text-white min-h-screen font-sans">
-			{/* Hero Section */}
-			<section className="h-screen flex flex-col justify-center items-center text-center px-6">
-				<h1 className="text-4xl md:text-6xl font-bold mb-4">
-					{siteData.hero.title}
-				</h1>
-				<p className="text-lg md:text-2xl mb-6">
-					{siteData.hero.subtitle}
-				</p>
-				<a
-					href={siteData.hero.ctaLink}
-					target="_blank"
-					className="bg-green-500 px-6 py-3 rounded-2xl text-lg font-semibold hover:bg-green-600 transition"
-				>
-					{siteData.hero.ctaText}
-				</a>
-			</section>
+			<Hero />
 
 			{/* About Section */}
 			<section className="py-20 px-6 max-w-5xl mx-auto text-center">
@@ -42,7 +28,7 @@ export default function Home() {
 			</section>
 
 			{/* Contact Form Section */}
-			<section className="py-20 px-6 bg-gray-800 text-center">
+			<section id="contact" className="py-20 px-6 bg-gray-800 text-center">
 				<h2 className="text-3xl font-bold mb-4">{siteData.form.title}</h2>
 				<p className="mb-8">{siteData.form.description}</p>
 				<form
