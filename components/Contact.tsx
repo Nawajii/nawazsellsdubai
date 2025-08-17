@@ -15,53 +15,23 @@ export default function Contact() {
 				whileInView={{ opacity: 1, y: 0 }}
 				viewport={{ once: true, amount: 0.3 }}
 				transition={{ duration: 0.6 }}
-				className="max-w-xl mx-auto rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-6"
+				className="flex justify-center"
 			>
-				<form action={siteData.form.endpoint} method="POST" className="space-y-6">
-					<input type="hidden" name="_redirect" value="http://localhost:3000/thank-you" />
-
-					<div className="relative">
-						<input
-							type="text"
-							name="name"
-							required
-							placeholder="Your Name"
-							className="peer w-full bg-black/20 text-white placeholder-transparent rounded-xl p-4 ring-1 ring-white/20 focus:ring-cyan-400 outline-none transition"
-						/>
-						<label className="pointer-events-none absolute left-4 top-4 text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-xs">Your Name</label>
-					</div>
-
-					<div className="relative">
-						<input
-							type="email"
-							name="email"
-							required
-							placeholder="Your Email"
-							className="peer w-full bg-black/20 text-white placeholder-transparent rounded-xl p-4 ring-1 ring-white/20 focus:ring-cyan-400 outline-none transition"
-						/>
-						<label className="pointer-events-none absolute left-4 top-4 text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-xs">Your Email</label>
-					</div>
-
-					<div className="relative">
-						<textarea
-							name="message"
-							required
-							rows={4}
-							placeholder="Your Message"
-							className="peer w-full bg-black/20 text-white placeholder-transparent rounded-xl p-4 ring-1 ring-white/20 focus:ring-cyan-400 outline-none transition"
-						/>
-						<label className="pointer-events-none absolute left-4 top-4 text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-xs">Your Message</label>
-					</div>
-
-					<div className="p-[2px] rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-500">
-						<button
-							type="submit"
-							className="w-full rounded-2xl bg-black/60 px-6 py-3 text-lg font-semibold uppercase tracking-wide hover:bg-black/40 transition"
-						>
-							{siteData.form.buttonText}
-						</button>
-					</div>
-				</form>
+				<motion.a
+					href={siteData.hero.ctaLink}
+					target="_blank"
+					rel="noopener noreferrer"
+					initial={{ opacity: 0, y: 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.6, delay: 0.1 }}
+					className="relative inline-block mt-4 group"
+				>
+					<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
+					<span className="relative z-10 inline-flex whitespace-nowrap items-center justify-center rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-4 py-2 text-sm md:px-8 md:py-3 md:text-lg font-semibold uppercase tracking-normal md:tracking-wide text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
+						Get in Touch
+					</span>
+				</motion.a>
 			</motion.div>
 		</section>
 	);
