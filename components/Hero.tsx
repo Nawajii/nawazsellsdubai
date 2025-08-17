@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { PopupButton } from "@typeform/embed-react";
 
 export default function Hero() {
 	return (
@@ -37,18 +38,19 @@ export default function Hero() {
 					>
 						Invest in the future. Prime properties. Zero tax. Global access.
 					</motion.p>
-											<motion.a
-							href="#contact"
+																	<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 1, ease: "easeOut", delay: 0.35 }}
 							className="relative inline-block mt-10 group"
 						>
-<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
-													<span className="relative z-10 inline-flex whitespace-nowrap items-center justify-center rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-4 py-2 text-sm md:px-8 md:py-3 md:text-lg font-semibold uppercase tracking-normal md:tracking-wide text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
-								Find your Investment
-							</span>
-					</motion.a>
+							<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
+							<PopupButton id="BWsT6btK" className="relative z-10 focus:outline-none">
+								<span className="relative z-10 inline-flex whitespace-nowrap items-center justify-center rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-4 py-2 text-sm md:px-8 md:py-3 md:text-lg font-semibold uppercase tracking-normal md:tracking-wide text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
+									Find your Investment
+								</span>
+							</PopupButton>
+						</motion.div>
 				</div>
 			</div>
 
