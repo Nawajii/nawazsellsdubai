@@ -1,75 +1,19 @@
 import { siteData } from "@/data/siteData";
 import Hero from "@/components/Hero";
+import About from "@/components/About";
+import WhyDubai from "@/components/WhyDubai";
+import Contact from "@/components/Contact";
 
 export default function Home() {
 	return (
 		<main className="bg-black text-white min-h-screen font-sans">
 			<Hero />
 
-			{/* About Section */}
-			<section className="py-20 px-6 max-w-5xl mx-auto text-center">
-				<h2 className="text-3xl font-bold mb-6">{siteData.about.title}</h2>
-				<p className="text-lg mb-6">{siteData.about.description}</p>
-				<img
-					src={siteData.about.image}
-					alt="Nawaz"
-					className="w-40 h-40 rounded-full mx-auto"
-				/>
-			</section>
+			<About />
 
-			{/* Why Dubai Section */}
-			<section className="py-20 bg-gray-900 px-6 text-center">
-				<h2 className="text-3xl font-bold mb-6">{siteData.whyDubai.title}</h2>
-				<ul className="space-y-3 text-lg">
-					{siteData.whyDubai.points.map((point, idx) => (
-						<li key={idx}>{point}</li>
-					))}
-				</ul>
-			</section>
+			<WhyDubai />
 
-			{/* Contact Form Section */}
-			<section id="contact" className="py-20 px-6 bg-gray-800 text-center">
-				<h2 className="text-3xl font-bold mb-4">{siteData.form.title}</h2>
-				<p className="mb-8">{siteData.form.description}</p>
-				<form
-					action={siteData.form.endpoint}
-					method="POST"
-					className="max-w-md mx-auto space-y-4"
-				>
-					<input
-						type="hidden"
-						name="_redirect"
-						value="http://localhost:3000/thank-you"
-					/>
-					<input
-						type="text"
-						name="name"
-						placeholder="Your Name"
-						required
-						className="w-full p-3 rounded-lg text-black"
-					/>
-					<input
-						type="email"
-						name="email"
-						placeholder="Your Email"
-						required
-						className="w-full p-3 rounded-lg text-black"
-					/>
-					<textarea
-						name="message"
-						placeholder="Your Message"
-						required
-						rows={4}
-						className="w-full p-3 rounded-lg text-black"
-					></textarea>
-					<button
-						type="submit"
-						className="bg-green-500 px-6 py-3 rounded-2xl text-lg font-semibold hover:bg-green-600 transition w-full"
-					>
-						{siteData.form.buttonText}
-					</button>
-				</form>
-			</section>
+			<Contact />
 
 			{/* Footer */}
 			<footer className="py-10 bg-black text-center">
