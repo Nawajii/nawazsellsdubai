@@ -46,7 +46,7 @@ export default function Hero() {
 					>
 						<span className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-400 blur opacity-40 group-hover:opacity-70 transition" />
 						<span className="relative z-10 rounded-2xl bg-black/60 ring-1 ring-amber-300/60 px-8 py-3 text-amber-200 hover:text-white hover:ring-amber-300 shadow-[0_0_30px_rgba(250,204,21,0.25)] transition">
-							Explore Opportunities
+							Find your Investment
 						</span>
 					</motion.a>
 				</div>
