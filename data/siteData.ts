@@ -25,10 +25,10 @@ export const siteData = {
 		buttonText: "Send Message",
 		endpoint: "https://formspree.io/f/xqalopnq", // my Formspree endpoint
 	},
-	socials: {
-		linkedin: "https://linkedin.com/in/nawaz",
-		instagram: "https://instagram.com/nawazsellsdubai",
-		tiktok: "https://tiktok.com/@nawaz",
-		youtube: "https://youtube.com/@nawaz",
-	},
+			socials: {
+			linkedin: "https://www.linkedin.com/in/syed-nawaz-573aa9131/",
+			instagram: "https://instagram.com/nawazsellsdubai",
+			tiktok: "https://tiktok.com/@nawaz",
+			youtube: "https://youtube.com/@nawaz",
+		},
 };
