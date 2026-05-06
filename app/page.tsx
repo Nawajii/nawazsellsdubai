@@ -18,12 +18,12 @@ const WHY = [
 ]
 
 const BRIEF_CONTENTS = [
-  { icon: '📊', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
-  { icon: '🏗', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
-  { icon: '💳', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
-  { icon: '📈', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
-  { icon: '🏷', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
-  { icon: '🛂', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
+  { glyph: '∿', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
+  { glyph: '◈', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
+  { glyph: '⬡', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
+  { glyph: '↗', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
+  { glyph: '⊟', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
+  { glyph: '◎', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
 const PILLARS = [
@@ -179,36 +179,71 @@ export default function Home() {
       {/* BRIEF SECTION */}
       <section id="brief-section" className="sec" style={{ padding:'100px 48px', borderBottom:gb }}>
         <div style={{ maxWidth:860, margin:'0 auto' }}>
-
-          {/* WHAT'S IN YOUR BRIEF — always visible */}
           <div style={{ marginBottom:56 }}>
+
+            {/* HEADING */}
             <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
             <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:14 }}>
-              What's Inside<br/><em style={{color:G}}>Your Investment Brief</em>
+              Get Your<br/><em style={{color:G}}>Institutional-Grade Analysis</em>
             </h2>
-            <p style={{ fontSize:13, color:M, maxWidth:520, lineHeight:1.8, marginBottom:36 }}>
-              Every brief is generated fresh using live web data. Here's exactly what you receive — the same framework institutional investors use to evaluate Dubai off-plan assets.
+            <p style={{ fontSize:13, color:M, maxWidth:540, lineHeight:1.8, marginBottom:36 }}>
+              Enter a project name, or upload a sales offer or brochure. Our analyst engine researches the asset using live market data and delivers the same framework used by institutional investors — instantly.
             </p>
-            <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:48 }}>
-              {BRIEF_CONTENTS.map((b,i)=>(
-                <div key={i} className="bc-card">
-                  <span style={{ fontSize:20, flexShrink:0 }}>{b.icon}</span>
-                  <div>
-                    <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
-                    <div style={{ fontSize:11, color:M, lineHeight:1.65 }}>{b.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* SEARCH INPUT — always visible, always interactive */}
-            <div style={{ borderTop:gb, paddingTop:36 }}>
-              <div style={{ fontSize:13, color:M, marginBottom:20 }}>Enter any Dubai off-plan project to receive your brief instantly.</div>
-              <div className="search-row" style={{ display:'flex', border:gb, overflow:'hidden', maxWidth:700 }}>
+            {/* SEARCH + UPLOAD INPUT */}
+            <div style={{ background:'rgba(255,255,255,.06)', border:`1px solid rgba(201,168,76,.3)`, padding:28, marginBottom:14, boxShadow:'0 0 0 1px rgba(201,168,76,.06), 0 8px 40px rgba(0,0,0,.4)' }}>
+              {/* Text input row */}
+              <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:12 }}>Project Name</div>
+              <div className="search-row" style={{ display:'flex', border:`1px solid rgba(255,255,255,.12)`, overflow:'hidden', marginBottom:20, background:N }}>
                 <input value={project} onChange={e=>setProject(e.target.value)} onKeyDown={e=>e.key==='Enter'&&generate()}
-                  style={{ flex:1, padding:'18px 24px', background:'rgba(255,255,255,.03)', border:'none', color:C, fontSize:14 }}
+                  style={{ flex:1, padding:'18px 24px', background:'transparent', border:'none', color:C, fontSize:14 }}
                   placeholder="e.g. Sobha Siniya Island, Ramada Residences, Binghatti Aurora…" />
                 <button className="gen-btn" onClick={generate} disabled={loading}>{loading?'Analysing…':'Generate Brief'}</button>
+              </div>
+              {/* Divider */}
+              <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
+                <div style={{ flex:1, height:1, background:'rgba(255,255,255,.07)' }} />
+                <span style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M }}>or upload a document</span>
+                <div style={{ flex:1, height:1, background:'rgba(255,255,255,.07)' }} />
+              </div>
+              {/* Upload area */}
+              <label style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, padding:'28px 20px', border:'1px dashed rgba(201,168,76,.25)', cursor:'pointer', transition:'border-color .2s, background .2s' }}
+                onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.5)')}
+                onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.25)')}>
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>{
+                  const f=e.target.files?.[0]
+                  if(f) setProject(`[Document: ${f.name}]`)
+                }} />
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.6)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontSize:12, color:C, marginBottom:4 }}>Drop your sales offer or brochure here</div>
+                  <div style={{ fontSize:11, color:M }}>PDF, JPG or PNG &nbsp;·&nbsp; Max 10MB</div>
+                </div>
+              </label>
+              {project.startsWith('[Document:') && (
+                <div style={{ marginTop:14, padding:'10px 16px', background:'rgba(20,184,166,.08)', border:`1px solid rgba(20,184,166,.2)`, display:'flex', alignItems:'center', gap:10, justifyContent:'space-between' }}>
+                  <span style={{ fontSize:12, color:T }}>{project}</span>
+                  <button onClick={()=>setProject('')} style={{ background:'none', border:'none', color:M, cursor:'pointer', fontSize:16, lineHeight:1 }}>×</button>
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize:11, color:M, textAlign:'right', letterSpacing:'.04em' }}>Powered by live web research &nbsp;·&nbsp; Results in ~20 seconds</div>
+
+            {/* WHAT'S IN YOUR BRIEF — below search */}
+            <div style={{ marginTop:56, paddingTop:48, borderTop:gb }}>
+              <div style={{ fontSize:10, letterSpacing:'.25em', textTransform:'uppercase', color:M, marginBottom:20 }}>What you receive</div>
+              <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                {BRIEF_CONTENTS.map((b,i)=>(
+                  <div key={i} className="bc-card">
+                    <div style={{ flexShrink:0, width:32, height:32, border:`1px solid rgba(201,168,76,.2)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <span style={{ color:G, fontSize:13 }}>{b.glyph}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
+                      <div style={{ fontSize:11, color:M, lineHeight:1.65 }}>{b.desc}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
