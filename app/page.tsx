@@ -2,10 +2,10 @@
 import { useState, useEffect, useRef } from 'react'
 
 const STATS = [
-  { value: 200, suffix: '+', label: 'Nationalities Investing' },
-  { value: 0, suffix: '%', label: 'Income Tax', static: true },
-  { value: 7, suffix: '%+', label: 'Average Gross Yield' },
-  { value: 1, prefix: '#', suffix: '', label: 'Safest City Globally' },
+  { value: '200+', label: 'Nationalities Investing', source: '' },
+  { value: '0%', label: 'Income Tax', source: '' },
+  { value: '7%+', label: 'Average Gross Yield', source: '' },
+  { value: '#1', label: 'Safest City Globally', source: 'Numbeo Safety Index 2025' },
 ]
 
 const WHY = [
@@ -15,6 +15,15 @@ const WHY = [
   { icon: '🏠', title: 'Golden Visa', body: 'A AED 2M+ investment unlocks a 10-year UAE residency visa for you and your family.' },
   { icon: '🔒', title: 'Regulated Market', body: 'Escrow-protected payments. Government-backed developer oversight. Strong investor protections.' },
   { icon: '💎', title: 'Capital Appreciation', body: 'Prime Dubai communities appreciated 20–40% through 2022–2024. Structural demand continues.' },
+]
+
+const BRIEF_CONTENTS = [
+  { icon: '📊', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
+  { icon: '🏗', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
+  { icon: '💳', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
+  { icon: '📈', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
+  { icon: '🏷', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
+  { icon: '🛂', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
 const PILLARS = [
@@ -91,19 +100,17 @@ export default function Home() {
         input,button{font-family:Inter,sans-serif;outline:none}
         input::placeholder{color:#8A7F6E}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
         .nav-link{color:#8A7F6E;font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;transition:color .2s}
         .nav-link:hover{color:#C9A84C}
         .cta-p{padding:14px 36px;background:#C9A84C;color:#060D1B;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;border:none;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s}
         .cta-p:hover{background:#E2C473}
-        .cta-s{padding:14px 36px;border:1px solid rgba(240,234,214,.2);color:#F0EAD6;font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:transparent;cursor:pointer;text-decoration:none;display:inline-block;transition:border-color .2s}
-        .cta-s:hover{border-color:#F0EAD6}
         .why-card{background:#0C1628;padding:36px;transition:background .2s}
         .why-card:hover{background:rgba(201,168,76,.04)}
         .pillar{padding:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-left:2px solid #C9A84C}
         .brief-card{padding:22px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
         .sc-card{padding:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);text-align:center}
+        .bc-card{padding:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;gap:14px;align-items:flex-start}
         .wa-btn{padding:12px 22px;background:#25D366;color:#fff;border:none;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .2s;white-space:nowrap}
         .wa-btn:hover{background:#1DB954}
         .gen-btn{padding:18px 36px;background:#C9A84C;color:#060D1B;border:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;cursor:pointer;min-width:160px;transition:background .2s}
@@ -112,7 +119,7 @@ export default function Home() {
         @media(max-width:768px){
           nav{padding:14px 20px !important}.nm-links{display:none !important}
           .stats-g{grid-template-columns:1fr 1fr !important}
-          .cards-g,.pillar-g,.scen-g,.about-g,.why-g{grid-template-columns:1fr !important}
+          .cards-g,.pillar-g,.scen-g,.about-g,.why-g,.bc-g{grid-template-columns:1fr !important}
           .about-g{gap:36px !important}
           .sec{padding:72px 20px !important}
           footer{flex-direction:column;align-items:center;text-align:center}
@@ -120,16 +127,14 @@ export default function Home() {
           .bh-r{flex-direction:column;gap:12px}
           .search-row{flex-direction:column !important}
           .gen-btn{width:100%;min-width:unset}
-          .hero-btns{flex-direction:column;align-items:center}
         }
       `}</style>
 
       {/* NAV */}
       <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:scrolled?'14px 48px':'22px 48px', background:scrolled?'rgba(6,13,27,.95)':'rgba(6,13,27,.8)', backdropFilter:'blur(20px)', borderBottom:gb, transition:'padding .3s, background .3s' }}>
-        {/* LOGO PLACEHOLDER */}
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:32, height:32, border:`1px solid ${G}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <span style={{ color:G, fontSize:14, fontWeight:600, letterSpacing:'.02em' }}>N</span>
+            <span style={{ color:G, fontSize:14, fontWeight:600 }}>N</span>
           </div>
           <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, letterSpacing:'.06em' }}>Nawaz<span style={{color:G}}>.</span></span>
         </div>
@@ -144,56 +149,73 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'120px 48px 80px', borderBottom:gb }}>
+      <section style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'140px 48px 80px', borderBottom:gb }}>
         <p style={{ fontSize:11, letterSpacing:'.32em', textTransform:'uppercase', color:G, marginBottom:24 }}>Off-Plan Specialist &nbsp;·&nbsp; Dubai</p>
         <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(52px,8vw,100px)', fontWeight:300, lineHeight:1.04, marginBottom:28 }}>
           Your Private<br/><em style={{color:G}}>Investment Analyst</em><br/>in Dubai
         </h1>
-        <p style={{ fontSize:15, color:M, maxWidth:520, margin:'0 auto 48px', fontWeight:300, lineHeight:1.8 }}>
+        <p style={{ fontSize:15, color:M, maxWidth:520, margin:'0 auto 20px', fontWeight:300, lineHeight:1.8 }}>
           Not a salesperson. A data-driven advisor for investors seeking yield, capital growth, and tax-free wealth in Dubai.
         </p>
-        <div className="hero-btns" style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap', marginBottom:64 }}>
-          <a href="#brief-section" className="cta-p">Get a Free Investment Brief</a>
-          <a href="#about" className="cta-s">About Nawaz</a>
-        </div>
-
-        {/* INLINE SEARCH */}
-        <div style={{ width:'100%', maxWidth:700 }}>
-          <div style={{ fontSize:10, letterSpacing:'.25em', textTransform:'uppercase', color:M, marginBottom:16 }}>Or analyse a project right now</div>
-          <div className="search-row" style={{ display:'flex', border:gb, overflow:'hidden' }}>
-            <input value={project} onChange={e=>setProject(e.target.value)} onKeyDown={e=>e.key==='Enter'&&generate()}
-              style={{ flex:1, padding:'18px 24px', background:'rgba(255,255,255,.03)', border:'none', color:C, fontSize:14 }}
-              placeholder="e.g. Sobha Siniya Island, Ramada Residences…" />
-            <button className="gen-btn" onClick={generate} disabled={loading}>{loading?'Analysing…':'Generate Brief'}</button>
-          </div>
-        </div>
+        {/* TRUST SIGNAL — replaces "About Nawaz" CTA */}
+        <p style={{ fontSize:12, color:M, letterSpacing:'.08em', marginBottom:48, borderTop:'1px solid rgba(255,255,255,.06)', borderBottom:'1px solid rgba(255,255,255,.06)', padding:'14px 28px', display:'inline-block' }}>
+          Serving investors from <span style={{color:G}}>40+ countries</span> &nbsp;·&nbsp; SRCC Delhi &nbsp;·&nbsp; Indian Army background
+        </p>
+        {/* SINGLE CTA */}
+        <a href="#brief-section" className="cta-p">Get Your Free Investment Brief →</a>
       </section>
 
       {/* STATS */}
       <div className="stats-g" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', background:N2, borderBottom:gb }}>
         {STATS.map((s,i)=>(
-          <div key={i} style={{ padding:'44px 32px', textAlign:'center', borderRight:i<3?gb:'none' }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, marginBottom:6 }}>
-              {s.static ? '0%' : `${s.prefix||''}${s.value}${s.suffix}`}
-            </div>
+          <div key={i} style={{ padding:'40px 32px', textAlign:'center', borderRight:i<3?gb:'none', position:'relative' }}>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, marginBottom:6 }}>{s.value}</div>
             <div style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>{s.label}</div>
+            {s.source && <div style={{ fontSize:9, color:'rgba(138,127,110,.5)', marginTop:8, letterSpacing:'.06em' }}>{s.source}</div>}
           </div>
         ))}
       </div>
 
-      {/* BRIEF RESULTS */}
-      <section id="brief-section" className="sec" style={{ padding:'100px 48px' }}>
+      {/* BRIEF SECTION */}
+      <section id="brief-section" className="sec" style={{ padding:'100px 48px', borderBottom:gb }}>
         <div style={{ maxWidth:860, margin:'0 auto' }}>
-          {!loading && !brief && (
-            <div style={{ textAlign:'center' }}>
-              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
-              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,4vw,56px)', fontWeight:300, lineHeight:1.08, marginBottom:16 }}>Enter a Project Above<br/><em style={{color:G}}>to Get Your Brief</em></h2>
-              <p style={{ fontSize:13, color:M, maxWidth:480, margin:'0 auto', lineHeight:1.8 }}>Get the same depth of analysis institutional investors use — developer track record, yield projections, and capital appreciation scenarios.</p>
-            </div>
-          )}
 
+          {/* WHAT'S IN YOUR BRIEF — always visible */}
+          <div style={{ marginBottom:56 }}>
+            <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
+            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:14 }}>
+              What's Inside<br/><em style={{color:G}}>Your Investment Brief</em>
+            </h2>
+            <p style={{ fontSize:13, color:M, maxWidth:520, lineHeight:1.8, marginBottom:36 }}>
+              Every brief is generated fresh using live web data. Here's exactly what you receive — the same framework institutional investors use to evaluate Dubai off-plan assets.
+            </p>
+            <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:48 }}>
+              {BRIEF_CONTENTS.map((b,i)=>(
+                <div key={i} className="bc-card">
+                  <span style={{ fontSize:20, flexShrink:0 }}>{b.icon}</span>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
+                    <div style={{ fontSize:11, color:M, lineHeight:1.65 }}>{b.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* SEARCH INPUT — always visible, always interactive */}
+            <div style={{ borderTop:gb, paddingTop:36 }}>
+              <div style={{ fontSize:13, color:M, marginBottom:20 }}>Enter any Dubai off-plan project to receive your brief instantly.</div>
+              <div className="search-row" style={{ display:'flex', border:gb, overflow:'hidden', maxWidth:700 }}>
+                <input value={project} onChange={e=>setProject(e.target.value)} onKeyDown={e=>e.key==='Enter'&&generate()}
+                  style={{ flex:1, padding:'18px 24px', background:'rgba(255,255,255,.03)', border:'none', color:C, fontSize:14 }}
+                  placeholder="e.g. Sobha Siniya Island, Ramada Residences, Binghatti Aurora…" />
+                <button className="gen-btn" onClick={generate} disabled={loading}>{loading?'Analysing…':'Generate Brief'}</button>
+              </div>
+            </div>
+          </div>
+
+          {/* LOADING */}
           {loading && (
-            <div ref={briefRef} style={{ padding:'64px 0', textAlign:'center' }}>
+            <div ref={briefRef} style={{ padding:'56px 0', textAlign:'center' }}>
               <div style={{ position:'relative', width:56, height:56, margin:'0 auto 24px' }}>
                 <div style={{ position:'absolute', inset:0, border:'1.5px solid rgba(255,255,255,.07)', borderTopColor:G, borderRadius:'50%', animation:'spin .7s linear infinite' }} />
                 <div style={{ position:'absolute', inset:10, border:'1px solid rgba(201,168,76,.2)', borderBottomColor:T, borderRadius:'50%', animation:'spin 1.2s linear infinite reverse' }} />
@@ -207,8 +229,9 @@ export default function Home() {
             </div>
           )}
 
+          {/* BRIEF RESULTS */}
           {brief && !loading && (
-            <div ref={briefRef} style={{ animation:'fadeIn .5s ease' }}>
+            <div ref={briefRef} style={{ animation:'fadeIn .5s ease', borderTop:gb, paddingTop:44 }}>
               <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
                 <div>
                   <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Investment Brief</div>
@@ -258,7 +281,7 @@ export default function Home() {
                   </div>
                   <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg,transparent,rgba(6,13,27,.96) 40%)', gap:16, padding:32 }}>
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, textAlign:'center' }}>Your full brief is ready.</div>
-                    <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:420, lineHeight:1.7 }}>Enter your WhatsApp to receive the complete analysis — analyst verdict, key risks, and a personalised note from Nawaz.</div>
+                    <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:420, lineHeight:1.7 }}>Enter your WhatsApp to receive the analyst verdict, key risks, and a personalised note from Nawaz.</div>
                     <div className="gate-form" style={{ display:'flex', gap:10, width:'100%', maxWidth:500, flexWrap:'wrap', justifyContent:'center' }}>
                       {[{v:name,s:setName,p:'Your name'},{v:phone,s:setPhone,p:'WhatsApp (+91 or +971…)'}].map((f,i)=>(
                         <input key={i} value={f.v} onChange={e=>f.s(e.target.value)} placeholder={f.p} style={{ flex:1, minWidth:160, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13 }} />
@@ -292,12 +315,14 @@ export default function Home() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" className="sec" style={{ padding:'100px 48px', background:N2, borderTop:gb, borderBottom:gb }}>
+      <section id="about" className="sec" style={{ padding:'100px 48px', background:N2, borderBottom:gb }}>
         <div className="about-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:80, alignItems:'center', maxWidth:1100, margin:'0 auto' }}>
+          {/* PHOTO PLACEHOLDER — replace with real <img> tag once you have a professional headshot */}
           <div style={{ position:'relative' }}>
             <div style={{ position:'absolute', top:-18, left:-18, right:18, bottom:18, border:'1px solid rgba(201,168,76,.15)' }} />
-            <div style={{ width:'100%', aspectRatio:'3/4', background:`linear-gradient(135deg,${N},rgba(20,184,166,.05))`, border:gb, display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:100, fontWeight:300, color:'rgba(201,168,76,.1)', letterSpacing:'-.02em' }}>N.</span>
+            <div style={{ width:'100%', aspectRatio:'3/4', background:`linear-gradient(135deg,${N},rgba(20,184,166,.05))`, border:gb, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+              <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:300, color:'rgba(201,168,76,.12)' }}>N.</span>
+              <span style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'rgba(138,127,110,.4)' }}>Photo coming soon</span>
             </div>
           </div>
           <div>
@@ -319,7 +344,7 @@ export default function Home() {
       </section>
 
       {/* WHY DUBAI */}
-      <section id="why" className="sec" style={{ padding:'100px 48px' }}>
+      <section id="why" className="sec" style={{ padding:'100px 48px', borderBottom:gb }}>
         <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>The Investment Case</p>
         <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,5vw,62px)', fontWeight:300, lineHeight:1.06, marginBottom:56 }}>Why Smart Capital<br/><em style={{color:G}}>Moves to Dubai</em></h2>
         <div className="why-g" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:1, background:'rgba(255,255,255,.06)' }}>
@@ -342,7 +367,8 @@ export default function Home() {
           <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18 }}>Nawaz<span style={{color:G}}>.</span></span>
         </div>
         <div style={{ display:'flex', gap:28, flexWrap:'wrap' }}>
-          {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['YouTube','https://youtube.com/@nawaz'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
+          {/* NOTE: Verify youtube.com/@nawaz is your active channel before keeping this link */}
+          {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['YouTube','https://youtube.com/@nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
             <a key={l} href={h} target="_blank" className="nav-link">{l}</a>
           ))}
         </div>
