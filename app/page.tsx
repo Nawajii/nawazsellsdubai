@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 const STATS = [
-  { value: '200+', label: 'Nationalities Investing', source: '' },
+  { value: '200+', label: 'Nationalities Invest in Dubai', source: 'Dubai Land Department 2025' },
   { value: '0%', label: 'Income Tax', source: '' },
   { value: '7%+', label: 'Average Gross Yield', source: '' },
   { value: '#1', label: 'Safest City Globally', source: 'Numbeo Safety Index 2025' },
@@ -317,9 +317,10 @@ export default function Home() {
                       </div>
                     ))}
                   </div>
-                  <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg,transparent,rgba(6,13,27,.96) 40%)', gap:16, padding:32 }}>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, textAlign:'center' }}>Your full brief is ready.</div>
-                    <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:420, lineHeight:1.7 }}>Enter your WhatsApp to receive the analyst verdict, key risks, and a personalised note from Nawaz.</div>
+                  <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg,rgba(6,13,27,.7) 0%,rgba(6,13,27,.98) 50%)', gap:16, padding:32 }}>
+                    <div style={{ width:40, height:1, background:`rgba(201,168,76,.4)`, marginBottom:4 }} />
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, textAlign:'center' }}>One last step.</div>
+                    <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:380, lineHeight:1.75 }}>Your analyst verdict, key risks, and full brief are ready. Enter your WhatsApp and we'll send it to you directly.</div>
                     <div className="gate-form" style={{ display:'flex', gap:10, width:'100%', maxWidth:500, flexWrap:'wrap', justifyContent:'center' }}>
                       {[{v:name,s:setName,p:'Your name'},{v:phone,s:setPhone,p:'WhatsApp (+91 or +971…)'}].map((f,i)=>(
                         <input key={i} value={f.v} onChange={e=>f.s(e.target.value)} placeholder={f.p} style={{ flex:1, minWidth:160, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13 }} />
@@ -355,12 +356,11 @@ export default function Home() {
       {/* ABOUT */}
       <section id="about" className="sec" style={{ padding:'100px 48px', background:N2, borderBottom:gb }}>
         <div className="about-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:80, alignItems:'center', maxWidth:1100, margin:'0 auto' }}>
-          {/* PHOTO PLACEHOLDER — replace with real <img> tag once you have a professional headshot */}
+          {/* PHOTO PLACEHOLDER — replace with real <img> once you have a headshot */}
           <div style={{ position:'relative' }}>
             <div style={{ position:'absolute', top:-18, left:-18, right:18, bottom:18, border:'1px solid rgba(201,168,76,.15)' }} />
-            <div style={{ width:'100%', aspectRatio:'3/4', background:`linear-gradient(135deg,${N},rgba(20,184,166,.05))`, border:gb, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+            <div style={{ width:'100%', aspectRatio:'3/4', background:`linear-gradient(135deg,${N},rgba(20,184,166,.05))`, border:gb, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:300, color:'rgba(201,168,76,.12)' }}>N.</span>
-              <span style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'rgba(138,127,110,.4)' }}>Photo coming soon</span>
             </div>
           </div>
           <div>
