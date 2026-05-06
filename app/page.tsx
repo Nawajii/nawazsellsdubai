@@ -133,7 +133,7 @@ export default function Home() {
       {/* NAV */}
       <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:scrolled?'14px 48px':'22px 48px', background:scrolled?'rgba(6,13,27,.95)':'rgba(6,13,27,.8)', backdropFilter:'blur(20px)', borderBottom:gb, transition:'padding .3s, background .3s' }}>
         <div style={{ display:'flex', alignItems:'center' }}>
-          <img src="/logo.png" alt="Nawaz Sells Dubai" style={{ height:44, width:'auto', display:'block' }} />
+          <img src="/nawazsellsdubai_logo_nobg.png" alt="Nawaz Sells Dubai" style={{ height:44, width:'auto', display:'block' }} />
         </div>
         <div className="nm-links" style={{ display:'flex', gap:36 }}>
           {['Get a Brief','About','Why Dubai'].map((l,i)=><a key={i} href={['#brief-section','#about','#why'][i]} className="nav-link">{l}</a>)}
@@ -355,7 +355,7 @@ export default function Home() {
           <div style={{ position:'relative' }}>
             <div style={{ position:'absolute', top:-18, left:-18, right:18, bottom:18, border:'1px solid rgba(201,168,76,.15)' }} />
             <div style={{ width:'100%', aspectRatio:'1/1', background:'#000', border:gb, display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-              <img src="/logo.png" alt="Nawaz Sells Dubai" style={{ width:'90%', height:'90%', objectFit:'contain' }} />
+              <img src="/logo.png" alt="Nawaz Sells Dubai" style={{ width:'90%', height:'90%', objectFit:'contain', mixBlendMode:'screen' }} />
             </div>
           </div>
           <div>
@@ -394,7 +394,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer style={{ padding:'40px 48px', borderTop:gb, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:20 }}>
         <div style={{ display:'flex', alignItems:'center' }}>
-          <img src="/logo.png" alt="Nawaz Sells Dubai" style={{ height:56, width:'auto', display:'block' }} />
+          <img src="/nawazsellsdubai_logo_nobg.png" alt="Nawaz Sells Dubai" style={{ height:56, width:'auto', display:'block' }} />
         </div>
         <div style={{ display:'flex', gap:28, flexWrap:'wrap' }}>
           {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
