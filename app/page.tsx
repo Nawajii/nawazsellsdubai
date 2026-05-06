@@ -17,6 +17,13 @@ const WHY = [
   { icon: '💎', title: 'Capital Appreciation', body: 'Prime Dubai communities appreciated 20–40% through 2022–2024. Structural demand continues.' },
 ]
 
+const PILLARS = [
+  { h: 'Data-Driven', p: 'IRR models and yield projections, not marketing decks.' },
+  { h: 'Investor-First', p: 'Your ROI is the brief. Always.' },
+  { h: 'Off-Plan Specialist', p: "Deep expertise in Dubai's off-plan and secondary markets." },
+  { h: 'Global Investors', p: 'Serving investors from across the world looking at Dubai.' },
+]
+
 const BRIEF_CONTENTS = [
   { glyph: '1', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
   { glyph: '2', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
@@ -26,14 +33,27 @@ const BRIEF_CONTENTS = [
   { glyph: '6', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
-const PILLARS = [
-  { h: 'Data-Driven', p: 'IRR models and yield projections, not marketing decks.' },
-  { h: 'Investor-First', p: 'Your ROI is the brief. Always.' },
-  { h: 'Off-Plan Specialist', p: "Deep expertise in Dubai's off-plan and secondary markets." },
-  { h: 'Global Investors', p: 'Serving investors from across the world looking at Dubai.' },
+const LOAD_STEPS = ['Searching project database…','Evaluating developer track record…','Computing yield model…','Running 3-year scenarios…','Preparing your brief…']
+
+const SURVEY = [
+  {
+    q: 'To weight your returns correctly — what range are you working with?',
+    key: 'budget',
+    options: ['Under AED 500K', 'AED 500K – 1M', 'AED 1M – 2M', 'AED 2M – 5M', 'Above AED 5M'],
+  },
+  {
+    q: 'What matters most to you from this investment?',
+    key: 'goal',
+    options: ['Monthly rental income', 'Long-term capital growth', 'UAE Golden Visa', 'A home in Dubai'],
+  },
+  {
+    q: 'How soon are you looking to move forward?',
+    key: 'timeline',
+    options: ['I\'m ready now', 'Within 3 months', 'Within 6 months', 'I\'m still researching'],
+  },
 ]
 
-const LOAD_STEPS = ['Searching project database…','Evaluating developer track record…','Computing yield model…','Running 3-year scenarios…','Preparing your brief…']
+const AREAS = ['Dubai South', 'JVC', 'Business Bay', 'Dubai Marina', 'Palm Jumeirah', 'Downtown Dubai', 'Help me decide']
 
 type Brief = {
   project: string; developer: string; developer_score: number; developer_note: string
@@ -42,16 +62,31 @@ type Brief = {
   golden_visa: boolean; verdict: 'BUY' | 'WATCH' | 'AVOID'; verdict_note: string; key_risk: string
 }
 
+type Answers = { budget: string; goal: string; timeline: string; area?: string }
+
+// FLOW STAGES
+// 'entry'     — search / upload / no idea
+// 'survey'    — 3 personalisation questions
+// 'area'      — area picker (only for no-idea path)
+// 'loading'   — generating
+// 'brief'     — results
+
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
+  const [stage, setStage] = useState<'entry'|'survey'|'area'|'loading'|'brief'>('entry')
+  const [entryMode, setEntryMode] = useState<'search'|'upload'|'explore'>('search')
   const [project, setProject] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<string>('')
+  const [surveyStep, setSurveyStep] = useState(0)
+  const [answers, setAnswers] = useState<Answers>({ budget:'', goal:'', timeline:'' })
+  const [selectedArea, setSelectedArea] = useState('')
   const [stepIdx, setStepIdx] = useState(0)
   const [brief, setBrief] = useState<Brief | null>(null)
   const [gated, setGated] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const briefRef = useRef<HTMLDivElement>(null)
+  const toolRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -60,29 +95,83 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (!loading) return
+    if (stage !== 'loading') return
     setStepIdx(0)
     const iv = setInterval(() => setStepIdx(i => Math.min(i + 1, LOAD_STEPS.length - 1)), 800)
     return () => clearInterval(iv)
-  }, [loading])
+  }, [stage])
 
-  async function generate() {
-    if (!project.trim()) return
-    setLoading(true); setBrief(null); setGated(true)
-    setTimeout(() => briefRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300)
+  function scrollToTool() {
+    setTimeout(() => toolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+  }
+
+  function startSurvey() {
+    setSurveyStep(0)
+    setStage('survey')
+    scrollToTool()
+  }
+
+  function handleSurveyAnswer(val: string) {
+    const key = SURVEY[surveyStep].key as keyof Answers
+    const updated = { ...answers, [key]: val }
+    setAnswers(updated)
+    if (surveyStep < SURVEY.length - 1) {
+      setSurveyStep(s => s + 1)
+    } else {
+      if (entryMode === 'explore') {
+        setStage('area')
+      } else {
+        runBrief(updated)
+      }
+    }
+  }
+
+  function handleAreaSelect(area: string) {
+    setSelectedArea(area)
+    runBrief(answers, area)
+  }
+
+  async function runBrief(ans: Answers, area?: string) {
+    setStage('loading')
+    scrollToTool()
+    const context = `
+Budget: ${ans.budget}
+Primary goal: ${ans.goal}
+Timeline: ${ans.timeline}
+${area ? `Preferred area: ${area}` : ''}
+${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
+    `.trim()
+    const projectQuery = entryMode === 'explore'
+      ? `Recommend the best off-plan project in ${area || 'Dubai'} for an investor with the following profile: ${context}`
+      : `Analyse this Dubai off-plan project: ${project || uploadedFile}. Investor profile: ${context}`
     try {
-      const res = await fetch('/api/brief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project }) })
+      const res = await fetch('/api/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project: projectQuery }),
+      })
       setBrief(await res.json())
-    } catch { alert('Could not generate brief. Please try again.') }
-    setLoading(false)
+      setStage('brief')
+      setTimeout(() => briefRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200)
+    } catch {
+      alert('Could not generate brief. Please try again.')
+      setStage('entry')
+    }
   }
 
   function submitLead() {
     if (!name.trim() || !phone.trim()) { alert('Please enter your name and WhatsApp number.'); return }
     if (!brief) return
-    const msg = encodeURIComponent(`Hi Nawaz! I just got the investment brief for *${brief.project}* from your website.\n\nName: ${name}\nProject: ${brief.project}\nGross Yield: ${brief.gross_yield} | Verdict: ${brief.verdict}\n\nI'd love a personalised analysis.`)
+    const msg = encodeURIComponent(`Hi Nawaz! I just received an investment brief for *${brief.project}* from your website.\n\nName: ${name}\nProject: ${brief.project}\nBudget: ${answers.budget} | Goal: ${answers.goal} | Timeline: ${answers.timeline}\nGross Yield: ${brief.gross_yield} | Verdict: ${brief.verdict}\n\nI'd love a personalised analysis.`)
     window.open(`https://wa.me/971563281781?text=${msg}`, '_blank')
     setGated(false)
+  }
+
+  function reset() {
+    setStage('entry'); setProject(''); setUploadedFile(''); setSurveyStep(0)
+    setAnswers({ budget:'', goal:'', timeline:'' }); setSelectedArea(''); setBrief(null); setGated(true)
+    setName(''); setPhone('')
+    scrollToTool()
   }
 
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n)
@@ -115,7 +204,10 @@ export default function Home() {
         .wa-btn:hover{background:#1DB954}
         .gen-btn{padding:18px 36px;background:#C9A84C;color:#060D1B;border:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;cursor:pointer;min-width:160px;transition:background .2s}
         .gen-btn:hover{background:#E2C473}
-        .gen-btn:disabled{opacity:.6;cursor:not-allowed}
+        .opt-btn{width:100%;padding:16px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#F0EAD6;font-size:13px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;justify-content:space-between}
+        .opt-btn:hover{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.35);color:#C9A84C}
+        .entry-tab{padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#8A7F6E;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;font-family:Inter,sans-serif}
+        .entry-tab.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.4);color:#C9A84C}
         @media(max-width:768px){
           nav{padding:14px 20px !important}.nm-links{display:none !important}
           .stats-g{grid-template-columns:1fr 1fr !important}
@@ -127,6 +219,7 @@ export default function Home() {
           .bh-r{flex-direction:column;gap:12px}
           .search-row{flex-direction:column !important}
           .gen-btn{width:100%;min-width:unset}
+          .entry-tabs{flex-direction:column}
         }
       `}</style>
 
@@ -154,11 +247,9 @@ export default function Home() {
         <p style={{ fontSize:15, color:M, maxWidth:520, margin:'0 auto 20px', fontWeight:300, lineHeight:1.8 }}>
           Not a salesperson. A data-driven advisor for investors seeking yield, capital growth, and tax-free wealth in Dubai.
         </p>
-        {/* TRUST SIGNAL — replaces "About Nawaz" CTA */}
         <p style={{ fontSize:12, color:M, letterSpacing:'.08em', marginBottom:48, borderTop:'1px solid rgba(255,255,255,.06)', borderBottom:'1px solid rgba(255,255,255,.06)', padding:'14px 28px', display:'inline-block' }}>
           Serving investors from <span style={{color:G}}>40+ countries</span> &nbsp;·&nbsp; Dubai Off-Plan Specialist
         </p>
-        {/* SINGLE CTA */}
         <a href="#brief-section" className="cta-p">Get Your Free Investment Brief →</a>
       </section>
 
@@ -173,88 +264,160 @@ export default function Home() {
         ))}
       </div>
 
-      {/* BRIEF SECTION */}
-      <section id="brief-section" className="sec" style={{ padding:'100px 48px', borderBottom:gb }}>
+      {/* ═══════════════════════════════ */}
+      {/* TOOL SECTION                   */}
+      {/* ═══════════════════════════════ */}
+      <section id="brief-section" className="sec" ref={toolRef} style={{ padding:'100px 48px', borderBottom:gb }}>
         <div style={{ maxWidth:860, margin:'0 auto' }}>
-          <div style={{ marginBottom:56 }}>
 
-            {/* HEADING */}
-            <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
-            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:14 }}>
-              Get Your<br/><em style={{color:G}}>Institutional-Grade Analysis</em>
-            </h2>
-            <p style={{ fontSize:13, color:M, maxWidth:540, lineHeight:1.8, marginBottom:36 }}>
-              Enter a project name, or upload a sales offer or brochure. Our analyst engine researches the asset using live market data and delivers the same framework used by institutional investors — instantly.
-            </p>
-
-            {/* SEARCH + UPLOAD INPUT */}
-            <div style={{ background:'rgba(255,255,255,.06)', border:`1px solid rgba(201,168,76,.3)`, padding:28, marginBottom:14, boxShadow:'0 0 0 1px rgba(201,168,76,.06), 0 8px 40px rgba(0,0,0,.4)' }}>
-              {/* Text input row */}
-              <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:12 }}>Project Name</div>
-              <div className="search-row" style={{ display:'flex', border:`1px solid rgba(255,255,255,.12)`, overflow:'hidden', marginBottom:20, background:N }}>
-                <input value={project} onChange={e=>setProject(e.target.value)} onKeyDown={e=>e.key==='Enter'&&generate()}
-                  style={{ flex:1, padding:'18px 24px', background:'transparent', border:'none', color:C, fontSize:14 }}
-                  placeholder="e.g. Sobha Siniya Island, Ramada Residences, Binghatti Aurora…" />
-                <button className="gen-btn" onClick={generate} disabled={loading}>{loading?'Analysing…':'Generate Brief'}</button>
-              </div>
-              {/* Divider */}
-              <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
-                <div style={{ flex:1, height:1, background:'rgba(255,255,255,.07)' }} />
-                <span style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M }}>or upload a document</span>
-                <div style={{ flex:1, height:1, background:'rgba(255,255,255,.07)' }} />
-              </div>
-              {/* Upload area */}
-              <label style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, padding:'28px 20px', border:'1px dashed rgba(201,168,76,.25)', cursor:'pointer', transition:'border-color .2s, background .2s' }}
-                onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.5)')}
-                onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.25)')}>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>{
-                  const f=e.target.files?.[0]
-                  if(f) setProject(`[Document: ${f.name}]`)
-                }} />
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.6)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:12, color:C, marginBottom:4 }}>Drop your sales offer or brochure here</div>
-                  <div style={{ fontSize:11, color:M }}>PDF, JPG or PNG</div>
-                </div>
-              </label>
-              {project.startsWith('[Document:') && (
-                <div style={{ marginTop:14, padding:'10px 16px', background:'rgba(20,184,166,.08)', border:`1px solid rgba(20,184,166,.2)`, display:'flex', alignItems:'center', gap:10, justifyContent:'space-between' }}>
-                  <span style={{ fontSize:12, color:T }}>{project}</span>
-                  <button onClick={()=>setProject('')} style={{ background:'none', border:'none', color:M, cursor:'pointer', fontSize:16, lineHeight:1 }}>×</button>
-                </div>
-              )}
-            </div>
-
-
-            {/* WHAT'S IN YOUR BRIEF — below search */}
-            <div style={{ marginTop:56, paddingTop:48, borderTop:gb }}>
-              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
-                What's Inside<br/><em style={{color:G}}>Your Brief</em>
+          {/* ── STAGE: ENTRY ── */}
+          {stage === 'entry' && (
+            <div style={{ animation:'fadeIn .4s ease' }}>
+              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:14 }}>
+                Get Your<br/><em style={{color:G}}>Institutional-Grade Analysis</em>
               </h2>
-              <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                {BRIEF_CONTENTS.map((b,i)=>(
-                  <div key={i} className="bc-card">
-                    <div style={{ flexShrink:0, fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, minWidth:36 }}>
-                      {b.glyph}
-                    </div>
-                    <div>
-                      <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
-                      <div style={{ fontSize:11, color:M, lineHeight:1.65 }}>{b.desc}</div>
-                    </div>
-                  </div>
+              <p style={{ fontSize:13, color:M, maxWidth:540, lineHeight:1.8, marginBottom:40 }}>
+                Enter a project, upload a document, or let us find the right opportunity for you — your brief is personalised to your goals.
+              </p>
+
+              {/* ENTRY TABS */}
+              <div className="entry-tabs" style={{ display:'flex', gap:0, marginBottom:32, borderBottom:gb }}>
+                {[['search','I have a project in mind'],['upload','I have a brochure or sales offer'],['explore','I don\'t know where to start']].map(([mode, label])=>(
+                  <button key={mode} className={`entry-tab${entryMode===mode?' active':''}`} onClick={()=>setEntryMode(mode as any)}>{label}</button>
                 ))}
               </div>
-            </div>
-          </div>
 
-          {/* LOADING */}
-          {loading && (
-            <div ref={briefRef} style={{ padding:'56px 0', textAlign:'center' }}>
-              <div style={{ position:'relative', width:56, height:56, margin:'0 auto 24px' }}>
+              {/* SEARCH MODE */}
+              {entryMode === 'search' && (
+                <div style={{ animation:'fadeIn .3s ease' }}>
+                  <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)', marginBottom:14 }}>
+                    <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:12 }}>Project Name</div>
+                    <div className="search-row" style={{ display:'flex', border:'1px solid rgba(255,255,255,.1)', overflow:'hidden', background:N }}>
+                      <input value={project} onChange={e=>setProject(e.target.value)} onKeyDown={e=>e.key==='Enter'&&project.trim()&&startSurvey()}
+                        style={{ flex:1, padding:'18px 24px', background:'transparent', border:'none', color:C, fontSize:14 }}
+                        placeholder="e.g. Sobha Siniya Island, Ramada Residences, Binghatti Aurora…" />
+                      <button className="gen-btn" onClick={()=>project.trim()&&startSurvey()} disabled={!project.trim()}>Continue →</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* UPLOAD MODE */}
+              {entryMode === 'upload' && (
+                <div style={{ animation:'fadeIn .3s ease' }}>
+                  <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)', marginBottom:14 }}>
+                    <label style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, padding:'36px 20px', border:'1px dashed rgba(201,168,76,.3)', cursor:'pointer', transition:'border-color .2s' }}
+                      onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.6)')}
+                      onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.3)')}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>{
+                        const f=e.target.files?.[0]
+                        if(f){ setUploadedFile(f.name); setProject(f.name) }
+                      }} />
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.7)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <div style={{ textAlign:'center' }}>
+                        <div style={{ fontSize:13, color:C, marginBottom:6 }}>Drop your sales offer or brochure here</div>
+                        <div style={{ fontSize:11, color:M }}>PDF, JPG or PNG</div>
+                      </div>
+                    </label>
+                    {uploadedFile && (
+                      <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(20,184,166,.08)', border:'1px solid rgba(20,184,166,.2)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <span style={{ fontSize:12, color:T }}>📄 {uploadedFile}</span>
+                        <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+                          <button className="gen-btn" style={{ padding:'10px 24px', fontSize:11 }} onClick={startSurvey}>Continue →</button>
+                          <button onClick={()=>{setUploadedFile('');setProject('')}} style={{ background:'none', border:'none', color:M, cursor:'pointer', fontSize:18, lineHeight:1 }}>×</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* EXPLORE MODE */}
+              {entryMode === 'explore' && (
+                <div style={{ animation:'fadeIn .3s ease' }}>
+                  <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)' }}>
+                    <p style={{ fontSize:13, color:M, lineHeight:1.8, marginBottom:24 }}>No problem. Tell us a little about what you're looking for and we'll find the right opportunity — and build you a personalised brief around it.</p>
+                    <button className="gen-btn" style={{ width:'100%', textAlign:'center' }} onClick={startSurvey}>Let's find your match →</button>
+                  </div>
+                </div>
+              )}
+
+              {/* WHAT'S INSIDE — always below entry */}
+              <div style={{ marginTop:64, paddingTop:56, borderTop:gb }}>
+                <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
+                  What's Inside<br/><em style={{color:G}}>Your Brief</em>
+                </h2>
+                <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  {BRIEF_CONTENTS.map((b,i)=>(
+                    <div key={i} className="bc-card">
+                      <div style={{ flexShrink:0, fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, minWidth:36 }}>{b.glyph}</div>
+                      <div style={{ paddingTop:8 }}>
+                        <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
+                        <div style={{ fontSize:11, color:M, lineHeight:1.65 }}>{b.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── STAGE: SURVEY ── */}
+          {stage === 'survey' && (
+            <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
+              {/* Progress */}
+              <div style={{ display:'flex', gap:8, marginBottom:48 }}>
+                {SURVEY.map((_,i)=>(
+                  <div key={i} style={{ flex:1, height:2, background: i<=surveyStep ? G : 'rgba(255,255,255,.1)', transition:'background .3s' }} />
+                ))}
+              </div>
+              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Step {surveyStep+1} of {SURVEY.length} — Personalising your brief</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(24px,3.5vw,42px)', fontWeight:300, lineHeight:1.15, marginBottom:36 }}>
+                {SURVEY[surveyStep].q}
+              </h2>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {SURVEY[surveyStep].options.map((opt)=>(
+                  <button key={opt} className="opt-btn" onClick={()=>handleSurveyAnswer(opt)}>
+                    <span>{opt}</span>
+                    <span style={{ color:G, fontSize:16 }}>→</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={()=>{ if(surveyStep>0) setSurveyStep(s=>s-1); else setStage('entry') }}
+                style={{ marginTop:28, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>
+                ← Back
+              </button>
+            </div>
+          )}
+
+          {/* ── STAGE: AREA PICKER (explore path only) ── */}
+          {stage === 'area' && (
+            <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
+              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Almost there — one last thing</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(24px,3.5vw,42px)', fontWeight:300, lineHeight:1.15, marginBottom:36 }}>
+                Any areas of Dubai that<br/><em style={{color:G}}>interest you?</em>
+              </h2>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {AREAS.map((area)=>(
+                  <button key={area} className="opt-btn" onClick={()=>handleAreaSelect(area)}>
+                    <span>{area}</span>
+                    <span style={{ color:G, fontSize:16 }}>→</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={()=>setStage('survey')} style={{ marginTop:28, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>← Back</button>
+            </div>
+          )}
+
+          {/* ── STAGE: LOADING ── */}
+          {stage === 'loading' && (
+            <div style={{ padding:'64px 0', textAlign:'center', animation:'fadeIn .4s ease' }}>
+              <div style={{ position:'relative', width:56, height:56, margin:'0 auto 28px' }}>
                 <div style={{ position:'absolute', inset:0, border:'1.5px solid rgba(255,255,255,.07)', borderTopColor:G, borderRadius:'50%', animation:'spin .7s linear infinite' }} />
                 <div style={{ position:'absolute', inset:10, border:'1px solid rgba(201,168,76,.2)', borderBottomColor:T, borderRadius:'50%', animation:'spin 1.2s linear infinite reverse' }} />
               </div>
-              <div style={{ fontSize:12, color:M, letterSpacing:'.12em', marginBottom:20 }}>Analysing project…</div>
+              <div style={{ fontSize:12, color:M, letterSpacing:'.12em', marginBottom:20 }}>Building your personalised brief…</div>
               {LOAD_STEPS.slice(0,stepIdx+1).map((s,i)=>(
                 <div key={i} style={{ fontSize:11, color:i===stepIdx?G:M, margin:'4px 0', display:'flex', alignItems:'center', gap:8, justifyContent:'center', transition:'color .3s' }}>
                   <span>{i<stepIdx?'✓':i===stepIdx?'›':'○'}</span>{s}
@@ -263,12 +426,19 @@ export default function Home() {
             </div>
           )}
 
-          {/* BRIEF RESULTS */}
-          {brief && !loading && (
-            <div ref={briefRef} style={{ animation:'fadeIn .5s ease', borderTop:gb, paddingTop:44 }}>
+          {/* ── STAGE: BRIEF ── */}
+          {stage === 'brief' && brief && (
+            <div ref={briefRef} style={{ animation:'fadeIn .5s ease' }}>
+              {/* Investor profile summary */}
+              <div style={{ padding:'14px 20px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.15)`, marginBottom:32, display:'flex', gap:24, flexWrap:'wrap' }}>
+                {[answers.budget, answers.goal, answers.timeline].filter(Boolean).map((a,i)=>(
+                  <span key={i} style={{ fontSize:11, color:T, letterSpacing:'.06em' }}>· {a}</span>
+                ))}
+              </div>
+
               <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Investment Brief</div>
+                  <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Personalised Investment Brief</div>
                   <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300 }}>{brief.project}</div>
                   <div style={{ fontSize:13, color:M, marginTop:4 }}>{brief.location}</div>
                 </div>
@@ -302,6 +472,7 @@ export default function Home() {
                 ))}
               </div>
 
+              {/* GATE */}
               {gated ? (
                 <div style={{ position:'relative' }}>
                   <div style={{ filter:'blur(8px)', opacity:.4, pointerEvents:'none', userSelect:'none' }}>
@@ -314,7 +485,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg,rgba(6,13,27,.7) 0%,rgba(6,13,27,.98) 50%)', gap:16, padding:32 }}>
-                    <div style={{ width:40, height:1, background:`rgba(201,168,76,.4)`, marginBottom:4 }} />
+                    <div style={{ width:40, height:1, background:'rgba(201,168,76,.4)', marginBottom:4 }} />
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, textAlign:'center' }}>One last step.</div>
                     <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:380, lineHeight:1.75 }}>Your analyst verdict, key risks, and full brief are ready. Enter your WhatsApp and we'll send it to you directly.</div>
                     <div className="gate-form" style={{ display:'flex', gap:10, width:'100%', maxWidth:500, flexWrap:'wrap', justifyContent:'center' }}>
@@ -338,10 +509,13 @@ export default function Home() {
                     <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>Key Risk</div>
                     <div style={{ fontSize:13, color:M, lineHeight:1.85 }}>{brief.key_risk}</div>
                   </div>
-                  <div style={{ padding:28, background:'rgba(20,184,166,.06)', border:`1px solid ${T}`, textAlign:'center' }}>
+                  <div style={{ padding:28, background:'rgba(20,184,166,.06)', border:`1px solid ${T}`, textAlign:'center', marginBottom:24 }}>
                     <div style={{ fontSize:13, color:T, marginBottom:16 }}>Want a personalised analysis with your budget, timeline and goals?</div>
                     <a href="https://wa.me/971563281781" target="_blank" className="cta-p">Book a Private Briefing with Nawaz</a>
                   </div>
+                  <button onClick={reset} style={{ background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em', textDecoration:'underline' }}>
+                    ← Analyse another project
+                  </button>
                 </div>
               )}
             </div>
