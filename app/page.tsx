@@ -85,7 +85,12 @@ export default function Home() {
   const [gated, setGated] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const briefRef = useRef<HTMLDivElement>(null)
+  const [cookieConsent, setCookieConsent] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cookie_consent')
+    if (stored !== null) setCookieConsent(stored === 'true')
+  }, [])
   const toolRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -222,6 +227,20 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
           .entry-tabs{flex-direction:column}
         }
       `}</style>
+
+      {/* COOKIE CONSENT */}
+      {cookieConsent === null && (
+        <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:999, background:'rgba(12,22,40,.97)', backdropFilter:'blur(16px)', borderTop:`1px solid rgba(201,168,76,.2)`, padding:'20px 48px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16 }}>
+          <div style={{ flex:1, minWidth:260 }}>
+            <p style={{ fontSize:12, color:C, marginBottom:4, fontWeight:500 }}>We use cookies</p>
+            <p style={{ fontSize:11, color:M, lineHeight:1.6 }}>We use analytics cookies to improve this site. Your data is never sold. <a href="/privacy" style={{ color:T, textDecoration:'none' }}>Privacy Policy</a></p>
+          </div>
+          <div style={{ display:'flex', gap:10 }}>
+            <button onClick={rejectCookies} style={{ padding:'9px 20px', background:'transparent', border:`1px solid rgba(255,255,255,.12)`, color:M, fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer', fontFamily:'Inter,sans-serif' }}>Reject</button>
+            <button onClick={acceptCookies} style={{ padding:'9px 20px', background:G, border:'none', color:N, fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', fontWeight:600, cursor:'pointer', fontFamily:'Inter,sans-serif' }}>Accept</button>
+          </div>
+        </div>
+      )}
 
       {/* NAV */}
       <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:scrolled?'14px 48px':'22px 48px', background:scrolled?'rgba(6,13,27,.95)':'rgba(6,13,27,.8)', backdropFilter:'blur(20px)', borderBottom:gb, transition:'padding .3s, background .3s' }}>
