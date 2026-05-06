@@ -405,8 +405,7 @@ export default function Home() {
           <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18 }}>Nawaz<span style={{color:G}}>.</span></span>
         </div>
         <div style={{ display:'flex', gap:28, flexWrap:'wrap' }}>
-          {/* NOTE: Verify youtube.com/@nawaz is your active channel before keeping this link */}
-          {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['YouTube','https://youtube.com/@nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
+          {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
             <a key={l} href={h} target="_blank" className="nav-link">{l}</a>
           ))}
         </div>
