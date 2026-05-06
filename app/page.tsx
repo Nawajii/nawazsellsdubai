@@ -217,7 +217,7 @@ export default function Home() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.6)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontSize:12, color:C, marginBottom:4 }}>Drop your sales offer or brochure here</div>
-                  <div style={{ fontSize:11, color:M }}>PDF, JPG or PNG &nbsp;·&nbsp; Max 10MB</div>
+                  <div style={{ fontSize:11, color:M }}>PDF, JPG or PNG</div>
                 </div>
               </label>
               {project.startsWith('[Document:') && (
@@ -227,11 +227,14 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div style={{ fontSize:11, color:M, textAlign:'right', letterSpacing:'.04em' }}>Powered by live web research &nbsp;·&nbsp; Results in ~20 seconds</div>
+
 
             {/* WHAT'S IN YOUR BRIEF — below search */}
             <div style={{ marginTop:56, paddingTop:48, borderTop:gb }}>
               <div style={{ fontSize:10, letterSpacing:'.25em', textTransform:'uppercase', color:M, marginBottom:20 }}>What you receive</div>
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
+                What's Inside<br/><em style={{color:G}}>Your Brief</em>
+              </h2>
               <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {BRIEF_CONTENTS.map((b,i)=>(
                   <div key={i} className="bc-card">
