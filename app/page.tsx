@@ -18,12 +18,12 @@ const WHY = [
 ]
 
 const BRIEF_CONTENTS = [
-  { glyph: '∿', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
-  { glyph: '◈', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
-  { glyph: '⬡', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
-  { glyph: '↗', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
-  { glyph: '⊟', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
-  { glyph: '◎', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
+  { glyph: '01', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
+  { glyph: '02', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
+  { glyph: '03', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
+  { glyph: '04', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
+  { glyph: '05', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
+  { glyph: '06', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
 const PILLARS = [
@@ -231,15 +231,14 @@ export default function Home() {
 
             {/* WHAT'S IN YOUR BRIEF — below search */}
             <div style={{ marginTop:56, paddingTop:48, borderTop:gb }}>
-              <div style={{ fontSize:10, letterSpacing:'.25em', textTransform:'uppercase', color:M, marginBottom:20 }}>What you receive</div>
               <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
                 What's Inside<br/><em style={{color:G}}>Your Brief</em>
               </h2>
               <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {BRIEF_CONTENTS.map((b,i)=>(
                   <div key={i} className="bc-card">
-                    <div style={{ flexShrink:0, width:32, height:32, border:`1px solid rgba(201,168,76,.2)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      <span style={{ color:G, fontSize:13 }}>{b.glyph}</span>
+                    <div style={{ flexShrink:0, width:36, height:36, border:`1px solid rgba(201,168,76,.25)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <span style={{ color:G, fontSize:11, fontWeight:600, letterSpacing:'.04em', fontFamily:'Inter,sans-serif' }}>{b.glyph}</span>
                     </div>
                     <div>
                       <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
