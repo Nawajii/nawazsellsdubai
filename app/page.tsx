@@ -18,12 +18,12 @@ const WHY = [
 ]
 
 const BRIEF_CONTENTS = [
-  { glyph: '01', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
-  { glyph: '02', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
-  { glyph: '03', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
-  { glyph: '04', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
-  { glyph: '05', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
-  { glyph: '06', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
+  { glyph: '1', label: 'Entry Price vs Market', desc: 'Launch price benchmarked against current secondary market rates in the same community.' },
+  { glyph: '2', label: 'Developer Track Record', desc: 'Delivery history, RERA standing, and a 1–5 analyst rating with a one-line verdict.' },
+  { glyph: '3', label: 'Payment Plan Breakdown', desc: 'Construction vs post-handover split, and what it means for your cash flow.' },
+  { glyph: '4', label: 'Gross & Net Yield Projection', desc: 'Estimated rental returns based on current market rates for the community and unit type.' },
+  { glyph: '5', label: '3-Year Appreciation Scenarios', desc: 'Bear, base, and bull case capital appreciation projections.' },
+  { glyph: '6', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
 const PILLARS = [
@@ -237,8 +237,8 @@ export default function Home() {
               <div className="bc-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {BRIEF_CONTENTS.map((b,i)=>(
                   <div key={i} className="bc-card">
-                    <div style={{ flexShrink:0, width:36, height:36, border:`1px solid rgba(201,168,76,.25)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      <span style={{ color:G, fontSize:11, fontWeight:600, letterSpacing:'.04em', fontFamily:'Inter,sans-serif' }}>{b.glyph}</span>
+                    <div style={{ flexShrink:0, fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, minWidth:36 }}>
+                      {b.glyph}
                     </div>
                     <div>
                       <div style={{ fontSize:12, fontWeight:500, marginBottom:4, letterSpacing:'.02em' }}>{b.label}</div>
