@@ -159,7 +159,7 @@ export default function Home() {
         </p>
         {/* TRUST SIGNAL — replaces "About Nawaz" CTA */}
         <p style={{ fontSize:12, color:M, letterSpacing:'.08em', marginBottom:48, borderTop:'1px solid rgba(255,255,255,.06)', borderBottom:'1px solid rgba(255,255,255,.06)', padding:'14px 28px', display:'inline-block' }}>
-          Serving investors from <span style={{color:G}}>40+ countries</span> &nbsp;·&nbsp; SRCC Delhi &nbsp;·&nbsp; Indian Army background
+          Serving investors from <span style={{color:G}}>40+ countries</span> &nbsp;·&nbsp; Dubai Off-Plan Specialist
         </p>
         {/* SINGLE CTA */}
         <a href="#brief-section" className="cta-p">Get Your Free Investment Brief →</a>
