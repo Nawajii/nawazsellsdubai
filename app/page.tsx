@@ -585,16 +585,27 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding:'40px 48px', borderTop:gb, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:20 }}>
-        <div style={{ display:'flex', alignItems:'center' }}>
-          <img src="/nawazsellsdubai_logo_nobg.png" alt="Nawaz Sells Dubai" style={{ height:88, width:'auto', display:'block' }} />
+      <footer style={{ padding:'40px 48px', borderTop:gb }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:20, marginBottom:24 }}>
+          <div style={{ display:'flex', alignItems:'center' }}>
+            <img src="/nawazsellsdubai_logo_nobg.png" alt="Nawaz Sells Dubai" style={{ height:88, width:'auto', display:'block' }} />
+          </div>
+          <div style={{ display:'flex', gap:28, flexWrap:'wrap' }}>
+            {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
+              <a key={l} href={h} target="_blank" className="nav-link">{l}</a>
+            ))}
+          </div>
         </div>
-        <div style={{ display:'flex', gap:28, flexWrap:'wrap' }}>
-          {[['LinkedIn','https://www.linkedin.com/in/syed-nawaz-573aa9131/'],['Instagram','https://instagram.com/nawazsellsdubai'],['WhatsApp','https://wa.me/971563281781']].map(([l,h])=>(
-            <a key={l} href={h} target="_blank" className="nav-link">{l}</a>
-          ))}
+        <div style={{ paddingTop:20, borderTop:gb, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14 }}>
+          <div style={{ display:'flex', gap:24, flexWrap:'wrap' }}>
+            <a href="/privacy" className="nav-link">Privacy Policy</a>
+            <a href="/terms" className="nav-link">Terms & Disclaimer</a>
+          </div>
+          <span style={{ fontSize:11, color:M }}>© 2026 nawazsellsdubai.com</span>
         </div>
-        <span style={{ fontSize:11, color:M }}>© 2026 nawazsellsdubai.com</span>
+        <p style={{ fontSize:10, color:'rgba(138,127,110,.6)', lineHeight:1.7, marginTop:20, maxWidth:760 }}>
+          Investment briefs are for informational purposes only and do not constitute financial, investment, or legal advice. All projections are estimates based on market data and are not guarantees of future performance.
+        </p>
       </footer>
     </main>
   )
