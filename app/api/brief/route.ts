@@ -26,8 +26,85 @@ JSON structure:
 
 If a document is provided, extract all available data from it directly. For any gaps, use web search and comparable Dubai market data. Personalise the verdict_note to the investor's stated budget, goal, and timeline. Return only valid JSON.`
 
+// Send WhatsApp message via WATI
+async function sendWhatsApp(phone: string, name: string, brief: any) {
+  const watiUrl = process.env.WATI_API_URL
+  const watiToken = process.env.WATI_API_TOKEN
+
+  if (!watiUrl || !watiToken) {
+    console.warn('WATI credentials not configured — skipping WhatsApp delivery')
+    return
+  }
+
+  // Clean phone number — remove spaces, dashes, + signs
+  const cleanPhone = phone.replace(/[\s\-\+]/g, '')
+
+  // First add contact to WATI
+  try {
+    await fetch(`${watiUrl}/api/v1/addContact/${cleanPhone}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${watiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: name,
+        customParams: [
+          { name: 'project', value: brief.project },
+          { name: 'verdict', value: brief.verdict },
+          { name: 'gross_yield', value: brief.gross_yield },
+        ]
+      })
+    })
+  } catch (e) {
+    console.error('WATI addContact error:', e)
+  }
+
+  // Send template message
+  try {
+    const res = await fetch(`${watiUrl}/api/v1/sendTemplateMessage`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${watiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        template_name: 'brief_delivery',
+        broadcast_name: `brief_${Date.now()}`,
+        receivers: [
+          {
+            whatsappNumber: cleanPhone,
+            customParams: [
+              { name: '1', value: name },
+              { name: '2', value: brief.project },
+              { name: '3', value: brief.verdict },
+              { name: '4', value: brief.gross_yield },
+              { name: '5', value: brief.base },
+            ]
+          }
+        ]
+      })
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      console.error('WATI sendTemplateMessage error:', data)
+    } else {
+      console.log('WhatsApp sent successfully:', data)
+    }
+  } catch (e) {
+    console.error('WATI sendTemplateMessage error:', e)
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const { project, fileBase64, fileMime } = await req.json()
+  const { project, fileBase64, fileMime, clientName, clientPhone, briefData } = await req.json()
+
+  // If brief already generated — just send WhatsApp
+  if (briefData && clientName && clientPhone) {
+    await sendWhatsApp(clientPhone, clientName, briefData)
+    return NextResponse.json({ ok: true })
+  }
 
   if (!project && !fileBase64) {
     return NextResponse.json({ error: 'No project or file provided' }, { status: 400 })
@@ -66,18 +143,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 })
     }
   } else {
-    // Text-only mode — use web search
     userContent = [{ type: 'text', text: `Generate an investment brief for: ${project}` }]
   }
 
   const body: any = {
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 1500,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],
   }
 
-  // Only use web search for text-based queries, not document uploads
   if (!isDocument) {
     body.tools = [{ type: 'web_search_20250305', name: 'web_search' }]
   }
@@ -110,9 +185,17 @@ export async function POST(req: NextRequest) {
   const je = txt.lastIndexOf('}')
   if (js !== -1 && je !== -1) txt = txt.slice(js, je + 1)
 
+  let brief
   try {
-    return NextResponse.json(JSON.parse(txt))
+    brief = JSON.parse(txt)
   } catch {
     return NextResponse.json({ error: 'Parse error' }, { status: 500 })
   }
+
+  // Send WhatsApp if client details provided
+  if (clientName && clientPhone) {
+    await sendWhatsApp(clientPhone, clientName, brief)
+  }
+
+  return NextResponse.json(brief)
 }
