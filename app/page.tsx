@@ -12,7 +12,7 @@ const WHY = [
   { icon: '🏛', title: 'Zero Income Tax', body: 'No capital gains tax. No inheritance tax. No income tax. Every dirham of yield stays with you.' },
   { icon: '📈', title: '7%+ Gross Yields', body: 'Dubai consistently outperforms London, Singapore, and Mumbai across most residential asset classes.' },
   { icon: '🌍', title: 'Gateway City', body: "8 hours from 80% of the world's population. Capital flows equally from East and West." },
-  { icon: '🏠', title: 'Golden Visa', body: 'A AED 2M+ investment unlocks a 10-year UAE residency visa for you and your family.' },
+  { icon: '🏠', title: 'Golden Visa', body: 'A AED 2M+ investment (approx. USD 545K / GBP 430K / INR 4.6 Cr) unlocks a 10-year UAE residency visa for you and your family.' },
   { icon: '🔒', title: 'Regulated Market', body: 'Escrow-protected payments. Government-backed developer oversight. Strong investor protections.' },
   { icon: '💎', title: 'Capital Appreciation', body: 'Prime Dubai communities appreciated 20–40% through 2022–2024. Structural demand continues.' },
 ]
@@ -36,64 +36,43 @@ const BRIEF_CONTENTS = [
 const LOAD_STEPS = ['Searching project database…','Evaluating developer track record…','Computing yield model…','Running 3-year scenarios…','Preparing your brief…']
 
 const SURVEY = [
-  {
-    q: 'To weight your returns correctly — what range are you working with?',
-    key: 'budget',
-    options: ['Under AED 500K', 'AED 500K – 1M', 'AED 1M – 2M', 'AED 2M – 5M', 'Above AED 5M'],
-  },
-  {
-    q: 'What matters most to you from this investment?',
-    key: 'goal',
-    options: ['Monthly rental income', 'Long-term capital growth', 'UAE Golden Visa', 'A home in Dubai'],
-  },
-  {
-    q: 'How soon are you looking to move forward?',
-    key: 'timeline',
-    options: ['I\'m ready now', 'Within 3 months', 'Within 6 months', 'I\'m still researching'],
-  },
+  { q: 'To weight your returns correctly — what range are you working with?', key: 'budget', options: ['Under AED 500K','AED 500K – 1M','AED 1M – 2M','AED 2M – 5M','Above AED 5M'] },
+  { q: 'What matters most to you from this investment?', key: 'goal', options: ['Monthly rental income','Long-term capital growth','UAE Golden Visa','A home in Dubai'] },
+  { q: 'How soon are you looking to move forward?', key: 'timeline', options: ["I'm ready now",'Within 3 months','Within 6 months',"I'm still researching"] },
 ]
 
-const AREAS = ['Dubai South', 'JVC', 'Business Bay', 'Dubai Marina', 'Palm Jumeirah', 'Downtown Dubai', 'Help me decide']
+const AREAS = ['Dubai South','JVC','Business Bay','Dubai Marina','Palm Jumeirah','Downtown Dubai','Help me decide']
 
 type Brief = {
   project: string; developer: string; developer_score: number; developer_note: string
   location: string; overview: string; price_sqft: string; gross_yield: string; net_yield: string
   bear: string; base: string; bull: string; payment_plan: string; handover: string
-  golden_visa: boolean; verdict: 'BUY' | 'WATCH' | 'AVOID'; verdict_note: string; key_risk: string
+  golden_visa: boolean; verdict: 'BUY'|'WATCH'|'AVOID'; verdict_note: string; key_risk: string
 }
 
-type Answers = { budget: string; goal: string; timeline: string; area?: string }
-
-// FLOW STAGES
-// 'entry'     — search / upload / no idea
-// 'survey'    — 3 personalisation questions
-// 'area'      — area picker (only for no-idea path)
-// 'loading'   — generating
-// 'brief'     — results
+type Answers = { budget: string; goal: string; timeline: string }
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [stage, setStage] = useState<'entry'|'survey'|'area'|'loading'|'brief'>('entry')
   const [entryMode, setEntryMode] = useState<'search'|'upload'|'explore'>('search')
   const [project, setProject] = useState('')
-  const [uploadedFile, setUploadedFile] = useState<string>('')
+  const [uploadedFile, setUploadedFile] = useState('')
   const [surveyStep, setSurveyStep] = useState(0)
   const [answers, setAnswers] = useState<Answers>({ budget:'', goal:'', timeline:'' })
-  const [selectedArea, setSelectedArea] = useState('')
   const [stepIdx, setStepIdx] = useState(0)
-  const [brief, setBrief] = useState<Brief | null>(null)
+  const [brief, setBrief] = useState<Brief|null>(null)
   const [gated, setGated] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [cookieConsent, setCookieConsent] = useState<boolean|null>(null)
   const briefRef = useRef<HTMLDivElement>(null)
   const toolRef = useRef<HTMLDivElement>(null)
-  const [cookieConsent, setCookieConsent] = useState<boolean | null>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('cookie_consent')
     if (stored !== null) setCookieConsent(stored === 'true')
   }, [])
-  const toolRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -108,15 +87,14 @@ export default function Home() {
     return () => clearInterval(iv)
   }, [stage])
 
+  function acceptCookies() { localStorage.setItem('cookie_consent','true'); setCookieConsent(true) }
+  function rejectCookies() { localStorage.setItem('cookie_consent','false'); setCookieConsent(false) }
+
   function scrollToTool() {
-    setTimeout(() => toolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    setTimeout(() => toolRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 100)
   }
 
-  function startSurvey() {
-    setSurveyStep(0)
-    setStage('survey')
-    scrollToTool()
-  }
+  function startSurvey() { setSurveyStep(0); setStage('survey'); scrollToTool() }
 
   function handleSurveyAnswer(val: string) {
     const key = SURVEY[surveyStep].key as keyof Answers
@@ -125,41 +103,23 @@ export default function Home() {
     if (surveyStep < SURVEY.length - 1) {
       setSurveyStep(s => s + 1)
     } else {
-      if (entryMode === 'explore') {
-        setStage('area')
-      } else {
-        runBrief(updated)
-      }
+      entryMode === 'explore' ? setStage('area') : runBrief(updated)
     }
   }
 
-  function handleAreaSelect(area: string) {
-    setSelectedArea(area)
-    runBrief(answers, area)
-  }
+  function handleAreaSelect(area: string) { runBrief(answers, area) }
 
   async function runBrief(ans: Answers, area?: string) {
-    setStage('loading')
-    scrollToTool()
-    const context = `
-Budget: ${ans.budget}
-Primary goal: ${ans.goal}
-Timeline: ${ans.timeline}
-${area ? `Preferred area: ${area}` : ''}
-${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
-    `.trim()
-    const projectQuery = entryMode === 'explore'
-      ? `Recommend the best off-plan project in ${area || 'Dubai'} for an investor with the following profile: ${context}`
-      : `Analyse this Dubai off-plan project: ${project || uploadedFile}. Investor profile: ${context}`
+    setStage('loading'); scrollToTool()
+    const context = `Budget: ${ans.budget}\nPrimary goal: ${ans.goal}\nTimeline: ${ans.timeline}${area ? `\nPreferred area: ${area}` : ''}${uploadedFile ? `\nDocument: ${uploadedFile}` : ''}`
+    const query = entryMode === 'explore'
+      ? `Recommend the best off-plan project in ${area||'Dubai'} for: ${context}`
+      : `Analyse: ${project||uploadedFile}. Investor profile: ${context}`
     try {
-      const res = await fetch('/api/brief', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project: projectQuery }),
-      })
+      const res = await fetch('/api/brief', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ project: query }) })
       setBrief(await res.json())
       setStage('brief')
-      setTimeout(() => briefRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200)
+      setTimeout(() => briefRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 200)
     } catch {
       alert('Could not generate brief. Please try again.')
       setStage('entry')
@@ -176,9 +136,8 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
 
   function reset() {
     setStage('entry'); setProject(''); setUploadedFile(''); setSurveyStep(0)
-    setAnswers({ budget:'', goal:'', timeline:'' }); setSelectedArea(''); setBrief(null); setGated(true)
-    setName(''); setPhone('')
-    scrollToTool()
+    setAnswers({ budget:'', goal:'', timeline:'' }); setBrief(null); setGated(true)
+    setName(''); setPhone(''); scrollToTool()
   }
 
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n)
@@ -211,6 +170,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
         .wa-btn:hover{background:#1DB954}
         .gen-btn{padding:18px 36px;background:#C9A84C;color:#060D1B;border:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;cursor:pointer;min-width:160px;transition:background .2s}
         .gen-btn:hover{background:#E2C473}
+        .gen-btn:disabled{opacity:.6;cursor:not-allowed}
         .opt-btn{width:100%;padding:16px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#F0EAD6;font-size:13px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;justify-content:space-between}
         .opt-btn:hover{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.35);color:#C9A84C}
         .entry-tab{padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#8A7F6E;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;font-family:Inter,sans-serif}
@@ -277,7 +237,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
       {/* STATS */}
       <div className="stats-g" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', background:N2, borderBottom:gb }}>
         {STATS.map((s,i)=>(
-          <div key={i} style={{ padding:'40px 32px', textAlign:'center', borderRight:i<3?gb:'none', position:'relative' }}>
+          <div key={i} style={{ padding:'40px 32px', textAlign:'center', borderRight:i<3?gb:'none' }}>
             <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:52, fontWeight:300, color:G, lineHeight:1, marginBottom:6 }}>{s.value}</div>
             <div style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>{s.label}</div>
             {s.source && <div style={{ fontSize:9, color:'rgba(138,127,110,.5)', marginTop:8, letterSpacing:'.06em' }}>{s.source}</div>}
@@ -285,13 +245,11 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
         ))}
       </div>
 
-      {/* ═══════════════════════════════ */}
-      {/* TOOL SECTION                   */}
-      {/* ═══════════════════════════════ */}
+      {/* TOOL SECTION */}
       <section id="brief-section" className="sec" ref={toolRef} style={{ padding:'100px 48px', borderBottom:gb }}>
         <div style={{ maxWidth:860, margin:'0 auto' }}>
 
-          {/* ── STAGE: ENTRY ── */}
+          {/* ENTRY */}
           {stage === 'entry' && (
             <div style={{ animation:'fadeIn .4s ease' }}>
               <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
@@ -302,14 +260,12 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                 Enter a project, upload a document, or let us find the right opportunity for you — your brief is personalised to your goals.
               </p>
 
-              {/* ENTRY TABS */}
               <div className="entry-tabs" style={{ display:'flex', gap:0, marginBottom:32, borderBottom:gb }}>
-                {[['search','I have a project in mind'],['upload','I have a brochure or sales offer'],['explore','I don\'t know where to start']].map(([mode, label])=>(
-                  <button key={mode} className={`entry-tab${entryMode===mode?' active':''}`} onClick={()=>setEntryMode(mode as any)}>{label}</button>
+                {[['search',"I have a project in mind"],['upload','I have a brochure or sales offer'],['explore',"I don't know where to start"]].map(([mode,label])=>(
+                  <button key={mode} className={`entry-tab${entryMode===mode?' active':''}`} onClick={()=>setEntryMode(mode as 'search'|'upload'|'explore')}>{label}</button>
                 ))}
               </div>
 
-              {/* SEARCH MODE */}
               {entryMode === 'search' && (
                 <div style={{ animation:'fadeIn .3s ease' }}>
                   <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)', marginBottom:14 }}>
@@ -324,7 +280,6 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                 </div>
               )}
 
-              {/* UPLOAD MODE */}
               {entryMode === 'upload' && (
                 <div style={{ animation:'fadeIn .3s ease' }}>
                   <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)', marginBottom:14 }}>
@@ -332,8 +287,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                       onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.6)')}
                       onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.3)')}>
                       <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>{
-                        const f=e.target.files?.[0]
-                        if(f){ setUploadedFile(f.name); setProject(f.name) }
+                        const f=e.target.files?.[0]; if(f){ setUploadedFile(f.name); setProject(f.name) }
                       }} />
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.7)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       <div style={{ textAlign:'center' }}>
@@ -354,7 +308,6 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                 </div>
               )}
 
-              {/* EXPLORE MODE */}
               {entryMode === 'explore' && (
                 <div style={{ animation:'fadeIn .3s ease' }}>
                   <div style={{ background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)' }}>
@@ -364,7 +317,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                 </div>
               )}
 
-              {/* WHAT'S INSIDE — always below entry */}
+              {/* WHAT'S INSIDE */}
               <div style={{ marginTop:64, paddingTop:56, borderTop:gb }}>
                 <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
                   What's Inside<br/><em style={{color:G}}>Your Brief</em>
@@ -384,13 +337,12 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
             </div>
           )}
 
-          {/* ── STAGE: SURVEY ── */}
+          {/* SURVEY */}
           {stage === 'survey' && (
             <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
-              {/* Progress */}
               <div style={{ display:'flex', gap:8, marginBottom:48 }}>
                 {SURVEY.map((_,i)=>(
-                  <div key={i} style={{ flex:1, height:2, background: i<=surveyStep ? G : 'rgba(255,255,255,.1)', transition:'background .3s' }} />
+                  <div key={i} style={{ flex:1, height:2, background:i<=surveyStep?G:'rgba(255,255,255,.1)', transition:'background .3s' }} />
                 ))}
               </div>
               <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Step {surveyStep+1} of {SURVEY.length} — Personalising your brief</p>
@@ -400,30 +352,26 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 {SURVEY[surveyStep].options.map((opt)=>(
                   <button key={opt} className="opt-btn" onClick={()=>handleSurveyAnswer(opt)}>
-                    <span>{opt}</span>
-                    <span style={{ color:G, fontSize:16 }}>→</span>
+                    <span>{opt}</span><span style={{ color:G, fontSize:16 }}>→</span>
                   </button>
                 ))}
               </div>
-              <button onClick={()=>{ if(surveyStep>0) setSurveyStep(s=>s-1); else setStage('entry') }}
-                style={{ marginTop:28, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>
-                ← Back
-              </button>
+              <button onClick={()=>{ surveyStep>0?setSurveyStep(s=>s-1):setStage('entry') }}
+                style={{ marginTop:28, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>← Back</button>
             </div>
           )}
 
-          {/* ── STAGE: AREA PICKER (explore path only) ── */}
+          {/* AREA PICKER */}
           {stage === 'area' && (
             <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
-              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Almost there — one last thing</p>
+              <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Almost there</p>
               <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(24px,3.5vw,42px)', fontWeight:300, lineHeight:1.15, marginBottom:36 }}>
                 Any areas of Dubai that<br/><em style={{color:G}}>interest you?</em>
               </h2>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 {AREAS.map((area)=>(
                   <button key={area} className="opt-btn" onClick={()=>handleAreaSelect(area)}>
-                    <span>{area}</span>
-                    <span style={{ color:G, fontSize:16 }}>→</span>
+                    <span>{area}</span><span style={{ color:G, fontSize:16 }}>→</span>
                   </button>
                 ))}
               </div>
@@ -431,7 +379,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
             </div>
           )}
 
-          {/* ── STAGE: LOADING ── */}
+          {/* LOADING */}
           {stage === 'loading' && (
             <div style={{ padding:'64px 0', textAlign:'center', animation:'fadeIn .4s ease' }}>
               <div style={{ position:'relative', width:56, height:56, margin:'0 auto 28px' }}>
@@ -447,16 +395,14 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
             </div>
           )}
 
-          {/* ── STAGE: BRIEF ── */}
+          {/* BRIEF */}
           {stage === 'brief' && brief && (
             <div ref={briefRef} style={{ animation:'fadeIn .5s ease' }}>
-              {/* Investor profile summary */}
               <div style={{ padding:'14px 20px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.15)`, marginBottom:32, display:'flex', gap:24, flexWrap:'wrap' }}>
-                {[answers.budget, answers.goal, answers.timeline].filter(Boolean).map((a,i)=>(
+                {[answers.budget,answers.goal,answers.timeline].filter(Boolean).map((a,i)=>(
                   <span key={i} style={{ fontSize:11, color:T, letterSpacing:'.06em' }}>· {a}</span>
                 ))}
               </div>
-
               <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
                 <div>
                   <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Personalised Investment Brief</div>
@@ -465,9 +411,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                 </div>
                 <div style={{ padding:'7px 18px', fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', fontWeight:600, background:`${vc[brief.verdict]}15`, color:vc[brief.verdict], border:`1px solid ${vc[brief.verdict]}` }}>{brief.verdict}</div>
               </div>
-
               <p style={{ fontSize:13, color:M, lineHeight:1.9, marginBottom:28, borderLeft:`2px solid ${G}`, paddingLeft:18 }}>{brief.overview}</p>
-
               <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
                 {[
                   { label:'Gross Yield (Est.)', val:brief.gross_yield, sub:'Net yield: '+brief.net_yield },
@@ -482,7 +426,6 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                   </div>
                 ))}
               </div>
-
               <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:14 }}>3-Year Capital Appreciation Scenarios</div>
               <div className="scen-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:28 }}>
                 {[{l:'Bear Case',v:brief.bear,c:'#EF4444'},{l:'Base Case',v:brief.base,c:G},{l:'Bull Case',v:brief.bull,c:T}].map((s,i)=>(
@@ -492,8 +435,6 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                   </div>
                 ))}
               </div>
-
-              {/* GATE */}
               {gated ? (
                 <div style={{ position:'relative' }}>
                   <div style={{ filter:'blur(8px)', opacity:.4, pointerEvents:'none', userSelect:'none' }}>
@@ -518,6 +459,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                         Send to WhatsApp
                       </button>
                     </div>
+                    <p style={{ fontSize:10, color:'rgba(138,127,110,.5)', textAlign:'center', maxWidth:380 }}>By submitting, you agree to our <a href="/privacy" style={{ color:T, textDecoration:'none' }}>Privacy Policy</a>. Your data will only be used to deliver this brief and for follow-up.</p>
                   </div>
                 </div>
               ) : (
@@ -534,9 +476,7 @@ ${uploadedFile ? `Document uploaded: ${uploadedFile}` : ''}
                     <div style={{ fontSize:13, color:T, marginBottom:16 }}>Want a personalised analysis with your budget, timeline and goals?</div>
                     <a href="https://wa.me/971563281781" target="_blank" className="cta-p">Book a Private Briefing with Nawaz</a>
                   </div>
-                  <button onClick={reset} style={{ background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em', textDecoration:'underline' }}>
-                    ← Analyse another project
-                  </button>
+                  <button onClick={reset} style={{ background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em', textDecoration:'underline' }}>← Analyse another project</button>
                 </div>
               )}
             </div>
