@@ -85,6 +85,8 @@ export default function Home() {
   const [gated, setGated] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const briefRef = useRef<HTMLDivElement>(null)
+  const toolRef = useRef<HTMLDivElement>(null)
   const [cookieConsent, setCookieConsent] = useState<boolean | null>(null)
 
   useEffect(() => {
