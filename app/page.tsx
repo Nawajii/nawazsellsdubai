@@ -127,7 +127,13 @@ export default function Home() {
           fileMime: uploadedMime || null,
         })
       })
-      setBrief(await res.json())
+      const data = await res.json()
+      if (!res.ok || !data.project) {
+        alert('Could not generate brief. Please check your project name and try again.')
+        setStage('entry')
+        return
+      }
+      setBrief(data)
       setStage('brief')
       setTimeout(() => briefRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 200)
     } catch {
@@ -138,9 +144,20 @@ export default function Home() {
 
   function submitLead() {
     if (!name.trim() || !phone.trim()) { alert('Please enter your name and WhatsApp number.'); return }
-    if (!brief) return
+    if (!brief || !brief.project) { alert('Brief data is missing. Please generate a brief first.'); return }
     const msg = encodeURIComponent(`Hi Nawaz! I just received an investment brief for *${brief.project}* from your website.\n\nName: ${name}\nProject: ${brief.project}\nBudget: ${answers.budget} | Goal: ${answers.goal} | Timeline: ${answers.timeline}\nGross Yield: ${brief.gross_yield} | Verdict: ${brief.verdict}\n\nI'd love a personalised analysis.`)
     window.open(`https://wa.me/971563281781?text=${msg}`, '_blank')
+    // Also trigger WhatsApp delivery via WATI
+    fetch('/api/brief', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project: `already_generated`,
+        clientName: name,
+        clientPhone: phone,
+        briefData: brief,
+      })
+    }).catch(e => console.error('WATI delivery error:', e))
     setGated(false)
   }
 
