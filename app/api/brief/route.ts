@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const SYSTEM = `You are an institutional-grade real estate investment analyst specializing in Dubai off-plan properties. Analyse the provided project information and return ONLY a valid JSON object — no markdown, no preamble, no explanation.
 
+IMPORTANT: Perform a MAXIMUM of 2 web searches. Be efficient — one search for the project, one for current market rates if needed. Do not over-search.
+
 JSON structure:
 {
   "project": "Full project name",
@@ -24,7 +26,10 @@ JSON structure:
   "key_risk": "Single key risk factor"
 }
 
-If a document is provided, extract all available data from it directly. For any gaps, use web search and comparable Dubai market data. Personalise the verdict_note to the investor's stated budget, goal, and timeline. Return only valid JSON.`
+If a document is provided, extract all available data from it directly. For any gaps, use market knowledge. Personalise the verdict_note to the investor's stated budget, goal, and timeline. Return only valid JSON.`
+
+// Simple in-memory cache — resets on server restart but saves cost for repeat queries
+const briefCache = new Map<string, any>()
 
 // Send WhatsApp message via WATI
 async function sendWhatsApp(phone: string, name: string, brief: any) {
@@ -146,9 +151,17 @@ export async function POST(req: NextRequest) {
     userContent = [{ type: 'text', text: `Generate an investment brief for: ${project}` }]
   }
 
+  // Check cache first for text queries
+  const cacheKey = project?.toLowerCase().trim().slice(0, 100)
+  if (!isDocument && cacheKey && briefCache.has(cacheKey)) {
+    const cached = briefCache.get(cacheKey)
+    if (clientName && clientPhone) await sendWhatsApp(clientPhone, clientName, cached)
+    return NextResponse.json(cached)
+  }
+
   const body: any = {
     model: 'claude-sonnet-4-5',
-    max_tokens: 1500,
+    max_tokens: 800,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],
   }
@@ -188,6 +201,8 @@ export async function POST(req: NextRequest) {
   let brief
   try {
     brief = JSON.parse(txt)
+    // Cache successful text-based briefs
+    if (!isDocument && cacheKey) briefCache.set(cacheKey, brief)
   } catch {
     return NextResponse.json({ error: 'Parse error' }, { status: 500 })
   }
