@@ -24,7 +24,7 @@ export default function CursorGlow() {
 				className="w-3 h-3 rounded-full"
 				style={{ translateX: sx, translateY: sy, filter: "blur(1px)" }}
 			>
-				<span className="block w-full h-full rounded-full bg-cyan-400 shadow-[0_0_24px_6px_rgba(34,211,238,0.7)]" />
+				<span className="block w-full h-full rounded-full bg-amber-300 shadow-[0_0_24px_6px_rgba(201,168,76,0.6)]" />
 			</motion.div>
 		</div>
 	);
