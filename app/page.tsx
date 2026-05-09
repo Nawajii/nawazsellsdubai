@@ -58,6 +58,8 @@ export default function Home() {
   const [entryMode, setEntryMode] = useState<'search'|'upload'|'explore'>('search')
   const [project, setProject] = useState('')
   const [uploadedFile, setUploadedFile] = useState('')
+  const [uploadedBase64, setUploadedBase64] = useState('')
+  const [uploadedMime, setUploadedMime] = useState('')
   const [surveyStep, setSurveyStep] = useState(0)
   const [answers, setAnswers] = useState<Answers>({ budget:'', goal:'', timeline:'' })
   const [stepIdx, setStepIdx] = useState(0)
@@ -116,7 +118,15 @@ export default function Home() {
       ? `Recommend the best off-plan project in ${area||'Dubai'} for: ${context}`
       : `Analyse: ${project||uploadedFile}. Investor profile: ${context}`
     try {
-      const res = await fetch('/api/brief', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ project: query }) })
+      const res = await fetch('/api/brief', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          project: query,
+          fileBase64: uploadedBase64 || null,
+          fileMime: uploadedMime || null,
+        })
+      })
       setBrief(await res.json())
       setStage('brief')
       setTimeout(() => briefRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 200)
@@ -135,8 +145,8 @@ export default function Home() {
   }
 
   function reset() {
-    setStage('entry'); setProject(''); setUploadedFile(''); setSurveyStep(0)
-    setAnswers({ budget:'', goal:'', timeline:'' }); setBrief(null); setGated(true)
+    setStage('entry'); setProject(''); setUploadedFile(''); setUploadedBase64(''); setUploadedMime('')
+    setSurveyStep(0); setAnswers({ budget:'', goal:'', timeline:'' }); setBrief(null); setGated(true)
     setName(''); setPhone(''); scrollToTool()
   }
 
@@ -287,7 +297,16 @@ export default function Home() {
                       onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.6)')}
                       onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(201,168,76,.3)')}>
                       <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>{
-                        const f=e.target.files?.[0]; if(f){ setUploadedFile(f.name); setProject(f.name) }
+                        const f=e.target.files?.[0]
+                        if(!f) return
+                        setUploadedFile(f.name)
+                        setUploadedMime(f.type)
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                          const result = reader.result as string
+                          setUploadedBase64(result.split(',')[1])
+                        }
+                        reader.readAsDataURL(f)
                       }} />
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.7)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       <div style={{ textAlign:'center' }}>
