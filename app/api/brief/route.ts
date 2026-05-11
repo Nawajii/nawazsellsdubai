@@ -4,7 +4,9 @@ import { createElement } from 'react'
 import { v2 as cloudinary } from 'cloudinary'
 import { BriefPDF } from './pdf'
 import { getNextReportNumber, logReport } from './sheets'
-import { getLandmarkDistances, OPTIONAL_LANDMARKS } from './maps'
+import { getLandmarkDistances } from './maps'
+
+export const maxDuration = 120 // seconds
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -280,7 +282,9 @@ export async function POST(req: NextRequest) {
   try {
     brief = JSON.parse(txt)
     if (cacheKey) briefCache.set(cacheKey, brief)
-  } catch {
+  } catch (e) {
+    console.error('Parse error. Raw text length:', txt.length)
+    console.error('First 500 chars:', txt.slice(0, 500))
     return NextResponse.json({ error: 'Parse error' }, { status: 500 })
   }
 
