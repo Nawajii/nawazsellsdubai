@@ -1,8 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const STATS = [
   { value: '200+', label: 'Nationalities Invest in Dubai', source: 'Dubai Land Department 2025' },
   { value: '0%',   label: 'Income Tax', source: '' },
@@ -69,8 +67,6 @@ const COUNTRY_CODES = [
   { code: '+86',  flag: '🇨🇳', name: 'China' },
 ]
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Stage = 'entry' | 'survey' | 'area' | 'loading' | 'brief'
 type EntryMode = 'search' | 'upload' | 'explore'
 type Answers = { budget: string; goal: string; timeline: string }
@@ -81,13 +77,8 @@ type Brief = {
   golden_visa: boolean; verdict: 'BUY' | 'WATCH' | 'AVOID'; verdict_note: string; key_risk: string
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function Home() {
-  // Nav
   const [scrolled, setScrolled] = useState(false)
-
-  // Tool flow
   const [stage, setStage] = useState<Stage>('entry')
   const [entryMode, setEntryMode] = useState<EntryMode>('search')
   const [project, setProject] = useState('')
@@ -98,24 +89,18 @@ export default function Home() {
   const [answers, setAnswers] = useState<Answers>({ budget: '', goal: '', timeline: '' })
   const [stepIdx, setStepIdx] = useState(0)
   const [brief, setBrief] = useState<Brief | null>(null)
-
-  // Gate
   const [gated, setGated] = useState(true)
+  const [sent, setSent] = useState(false)
   const [clientName, setClientName] = useState('')
   const [countryCode, setCountryCode] = useState('+971')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [phoneError, setPhoneError] = useState('')
-
-  const [sent, setSent] = useState(false)
-
-  // Cookie
   const [cookieConsent, setCookieConsent] = useState<boolean | null>(null)
   const briefRef = useRef<HTMLDivElement>(null)
   const toolRef  = useRef<HTMLDivElement>(null)
 
-  // Refs
-
-  // ── Effects ──
+  useEffect(() => {
+    const stored = localStorage.getItem('cookie_consent')
     if (stored !== null) setCookieConsent(stored === 'true')
   }, [])
 
@@ -131,8 +116,6 @@ export default function Home() {
     const iv = setInterval(() => setStepIdx(i => Math.min(i + 1, LOAD_STEPS.length - 1)), 800)
     return () => clearInterval(iv)
   }, [stage])
-
-  // ── Helpers ──
 
   function acceptCookies() { localStorage.setItem('cookie_consent', 'true');  setCookieConsent(true)  }
   function rejectCookies()  { localStorage.setItem('cookie_consent', 'false'); setCookieConsent(false) }
@@ -184,38 +167,24 @@ export default function Home() {
   }
 
   function submitLead() {
-    // Validate name
-    if (!clientName.trim()) {
-      alert('Please enter your name.')
-      return
-    }
-    // Validate phone — must have at least 5 digits
+    if (!clientName.trim()) { alert('Please enter your name.'); return }
     const digits = phoneNumber.replace(/\D/g, '')
-    if (digits.length < 5) {
-      setPhoneError('Please enter a valid phone number.')
-      return
-    }
+    if (digits.length < 5) { setPhoneError('Please enter a valid phone number.'); return }
     setPhoneError('')
     const fullPhone = `${countryCode}${digits}`
-    if (!brief || !brief.project) {
-      alert('Brief data is missing. Please generate a brief first.')
-      return
-    }
-    // Open wa.me with pre-filled message
-    const msg = encodeURIComponent(
-      `Hi Nawaz! I just received an investment brief for *${brief.project}* from your website.\n\n` +
-      `Name: ${clientName}\nProject: ${brief.project}\n` +
-      `Budget: ${answers.budget} | Goal: ${answers.goal} | Timeline: ${answers.timeline}\n` +
-      `Gross Yield: ${brief.gross_yield} | Verdict: ${brief.verdict}\n\n` +
-      `I'd love a personalised analysis.`
-    )
-    window.open(`https://wa.me/971563281781?text=${msg}`, '_blank')
-    // Fire WATI delivery in background
+    if (!brief || !brief.project) { alert('Brief data is missing.'); return }
     fetch('/api/brief', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project: 'already_generated', clientName, clientPhone: fullPhone, briefData: brief }),
-    }).catch(e => console.error('WATI error:', e))
+      body: JSON.stringify({
+        project: 'already_generated',
+        clientName,
+        clientPhone: fullPhone,
+        briefData: brief,
+        answers,
+      }),
+    }).catch(e => console.error('Delivery error:', e))
+    setSent(true)
     setGated(false)
   }
 
@@ -227,14 +196,10 @@ export default function Home() {
     scrollToTool()
   }
 
-  // ── Style shortcuts ──
-
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n)
   const vc: Record<string, string> = { BUY: '#14B8A6', WATCH: '#C9A84C', AVOID: '#EF4444' }
   const N = '#060D1B', N2 = '#0C1628', G = '#C9A84C', T = '#14B8A6', C = '#F0EAD6', M = '#8A7F6E'
   const gb = '1px solid rgba(255,255,255,.07)'
-
-  // ── Render ──
 
   return (
     <main style={{ background: N, color: C, fontFamily: 'Inter,sans-serif', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -254,8 +219,6 @@ export default function Home() {
         .why-card{background:#0C1628;padding:36px;transition:background .2s}
         .why-card:hover{background:rgba(201,168,76,.04)}
         .pillar{padding:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-left:2px solid #C9A84C}
-        .brief-card{padding:22px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
-        .sc-card{padding:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);text-align:center}
         .bc-card{padding:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;gap:14px;align-items:flex-start}
         .wa-btn{padding:14px 22px;background:#25D366;color:#fff;border:none;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .2s;width:100%}
         .wa-btn:hover{background:#1DB954}
@@ -338,7 +301,7 @@ export default function Home() {
       <section id="brief-section" className="sec" ref={toolRef} style={{ padding:'100px 48px', borderBottom:gb }}>
         <div style={{ maxWidth:860, margin:'0 auto' }}>
 
-          {/* ── ENTRY ── */}
+          {/* ENTRY */}
           {stage === 'entry' && (
             <div style={{ animation:'fadeIn .4s ease' }}>
               <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:14 }}>Analyst Intelligence</p>
@@ -348,15 +311,12 @@ export default function Home() {
               <p style={{ fontSize:13, color:M, maxWidth:540, lineHeight:1.8, marginBottom:40 }}>
                 Enter a project, upload a document, or let us find the right opportunity for you — your brief is personalised to your goals.
               </p>
-
-              {/* Tabs */}
               <div className="entry-tabs" style={{ display:'flex', gap:0, marginBottom:32, borderBottom:gb }}>
                 {([['search','I have a project in mind'],['upload','I have a brochure or sales offer'],['explore',"I don't know where to start"]] as [EntryMode,string][]).map(([mode,label]) => (
                   <button key={mode} className={`entry-tab${entryMode===mode?' active':''}`} onClick={() => setEntryMode(mode)}>{label}</button>
                 ))}
               </div>
 
-              {/* Search */}
               {entryMode === 'search' && (
                 <div style={{ animation:'fadeIn .3s ease', background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)' }}>
                   <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:12 }}>Project Name</div>
@@ -369,15 +329,13 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Upload */}
               {entryMode === 'upload' && (
                 <div style={{ animation:'fadeIn .3s ease', background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)' }}>
                   <label style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12, padding:'36px 20px', border:'1px dashed rgba(201,168,76,.3)', cursor:'pointer', transition:'border-color .2s' }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor='rgba(201,168,76,.6)')}
                     onMouseLeave={e => (e.currentTarget.style.borderColor='rgba(201,168,76,.3)')}>
                     <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e => {
-                      const f = e.target.files?.[0]
-                      if (!f) return
+                      const f = e.target.files?.[0]; if (!f) return
                       setUploadedFile(f.name); setUploadedMime(f.type)
                       const r = new FileReader()
                       r.onload = () => setUploadedBase64((r.result as string).split(',')[1])
@@ -401,7 +359,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Explore */}
               {entryMode === 'explore' && (
                 <div style={{ animation:'fadeIn .3s ease', background:'rgba(255,255,255,.04)', border:`1px solid rgba(201,168,76,.25)`, padding:28, boxShadow:'0 8px 40px rgba(0,0,0,.3)' }}>
                   <p style={{ fontSize:13, color:M, lineHeight:1.8, marginBottom:24 }}>No problem. Tell us a little about what you're looking for and we'll find the right opportunity — and build a personalised brief around it.</p>
@@ -409,7 +366,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* What's inside */}
               <div style={{ marginTop:64, paddingTop:56, borderTop:gb }}>
                 <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(30px,4vw,54px)', fontWeight:300, lineHeight:1.08, marginBottom:36 }}>
                   What's Inside<br /><em style={{ color:G }}>Your Brief</em>
@@ -429,7 +385,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── SURVEY ── */}
+          {/* SURVEY */}
           {stage === 'survey' && (
             <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
               <div style={{ display:'flex', gap:8, marginBottom:48 }}>
@@ -449,7 +405,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── AREA ── */}
+          {/* AREA */}
           {stage === 'area' && (
             <div style={{ animation:'fadeIn .4s ease', maxWidth:600, margin:'0 auto' }}>
               <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Almost there</p>
@@ -467,7 +423,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── LOADING ── */}
+          {/* LOADING */}
           {stage === 'loading' && (
             <div style={{ padding:'64px 0', textAlign:'center', animation:'fadeIn .4s ease' }}>
               <div style={{ position:'relative', width:56, height:56, margin:'0 auto 28px' }}>
@@ -483,11 +439,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── BRIEF ── */}
+          {/* BRIEF */}
           {stage === 'brief' && brief && (
             <div ref={briefRef} style={{ animation:'fadeIn .5s ease' }}>
               {gated ? (
-                /* GATED — show only verdict, everything else blurred */
                 <div>
                   <div style={{ textAlign:'center', padding:'48px 0 36px' }}>
                     <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:12 }}>Investment Brief Ready</div>
@@ -500,9 +455,8 @@ export default function Home() {
                     <p style={{ fontSize:12, color:M, marginTop:12 }}>Your full analysis is ready — yield projections, developer rating, payment plan, appreciation scenarios, and key risk.</p>
                   </div>
 
-                  {/* Blurred placeholder */}
                   <div style={{ filter:'blur(6px)', opacity:.3, pointerEvents:'none', userSelect:'none', marginBottom:28 }}>
-                    <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
                       {[1,2,3,4].map(i => (
                         <div key={i} style={{ padding:22, background:'rgba(255,255,255,.04)', border:gb }}>
                           <div style={{ height:10, background:'rgba(255,255,255,.07)', width:'50%', borderRadius:2, marginBottom:10 }} />
@@ -521,39 +475,23 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Gate form */}
                   <div style={{ background:'rgba(12,22,40,.95)', border:`1px solid rgba(201,168,76,.25)`, padding:36, boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
                     <div style={{ width:40, height:1, background:'rgba(201,168,76,.4)', marginBottom:20 }} />
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, marginBottom:8 }}>Unlock your full brief.</div>
                     <div style={{ fontSize:13, color:M, lineHeight:1.75, marginBottom:24 }}>Enter your WhatsApp number and we'll send the complete analysis directly to you.</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                      {/* Name */}
-                      <input
-                        value={clientName}
-                        onChange={e => setClientName(e.target.value)}
-                        placeholder="Your name"
-                        style={{ padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13, width:'100%' }}
-                      />
-                      {/* Phone */}
+                      <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Your name"
+                        style={{ padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13, width:'100%' }} />
                       <div style={{ display:'flex', gap:8 }}>
-                        <select
-                          value={countryCode}
-                          onChange={e => setCountryCode(e.target.value)}
+                        <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
                           style={{ padding:'13px 10px', background:'#0C1628', border:gb, color:C, fontSize:13, cursor:'pointer', minWidth:140 }}>
-                          {COUNTRY_CODES.map(c => (
-                            <option key={c.code} value={c.code}>{c.flag} {c.code} {c.name}</option>
-                          ))}
+                          {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code} {c.name}</option>)}
                         </select>
-                        <input
-                          value={phoneNumber}
-                          onChange={e => { setPhoneNumber(e.target.value); setPhoneError('') }}
-                          placeholder="WhatsApp number"
-                          type="tel"
-                          style={{ flex:1, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:phoneError ? '1px solid #EF4444' : gb, color:C, fontSize:13 }}
-                        />
+                        <input value={phoneNumber} onChange={e => { setPhoneNumber(e.target.value); setPhoneError('') }}
+                          placeholder="WhatsApp number" type="tel"
+                          style={{ flex:1, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:phoneError?'1px solid #EF4444':gb, color:C, fontSize:13 }} />
                       </div>
                       {phoneError && <p style={{ fontSize:11, color:'#EF4444' }}>{phoneError}</p>}
-                      {/* Submit */}
                       <button onClick={submitLead} className="wa-btn">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                         Send My Brief to WhatsApp
@@ -564,20 +502,18 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-
               ) : (
-                /* CONFIRMATION — no brief data shown on screen */
                 <div style={{ animation:'fadeIn .5s ease', textAlign:'center', padding:'60px 0' }}>
                   <div style={{ width:56, height:56, background:'rgba(20,184,166,.1)', border:`1px solid ${T}`, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px', fontSize:22 }}>✓</div>
                   <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:300, marginBottom:12 }}>Brief on its way.</div>
                   <p style={{ fontSize:13, color:M, maxWidth:380, margin:'0 auto 32px', lineHeight:1.8 }}>
-                    Your personalised investment brief for <strong style={{ color:C }}>{brief?.project}</strong> is being generated and will arrive on your WhatsApp shortly.
+                    Your personalised investment brief for <strong style={{ color:C }}>{brief.project}</strong> is being generated and will arrive on your WhatsApp shortly.
                   </p>
                   <div style={{ padding:'20px 28px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.2)`, display:'inline-block', marginBottom:36 }}>
-                    <p style={{ fontSize:12, color:T, marginBottom:4 }}>Want to discuss this investment personally?</p>
-                    <a href="https://wa.me/971563281781" target="_blank" className="cta-p" style={{ display:'inline-block', marginTop:8 }}>Book a Call with Nawaz</a>
+                    <p style={{ fontSize:12, color:T, marginBottom:8 }}>Want to discuss this investment personally?</p>
+                    <a href="https://wa.me/971563281781" target="_blank" className="cta-p" style={{ display:'inline-block' }}>Book a Call with Nawaz</a>
                   </div>
-                  <br/>
+                  <br />
                   <button onClick={reset} style={{ background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em', textDecoration:'underline' }}>← Analyse another project</button>
                 </div>
               )}
