@@ -33,6 +33,8 @@ const BRIEF_CONTENTS = [
   { glyph: '6', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
+const LOAD_STEPS = ['Searching project database…','Evaluating developer track record…','Computing yield model…','Running 3-year scenarios…','Preparing your brief…']
+
 const COUNTRY_CODES = [
   { code: '+971', country: 'AE', flag: '🇦🇪', name: 'UAE' },
   { code: '+91', country: 'IN', flag: '🇮🇳', name: 'India' },
