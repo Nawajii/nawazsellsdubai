@@ -105,7 +105,7 @@ Return this exact JSON structure:
   "sources": ["URL or source 1", "URL or source 2", "URL or source 3"]
 }
 
-IMPORTANT RULES:
+CRITICAL: Return pure JSON only. Do NOT include any <cite> tags, citation markers, or source references inside the JSON values. Plain text values only.
 - No payment plan information — omit entirely
 - No verdict, no BUY/WATCH/AVOID
 - Risk section must be balanced — never alarmist, never negligent
@@ -251,7 +251,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body: any = {
-    model: 'claude-sonnet-4-5',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 2000,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],
@@ -279,6 +279,8 @@ export async function POST(req: NextRequest) {
   }
 
   let txt = data.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('')
+  // Strip citation tags inserted by web search
+  txt = txt.replace(/<cite[^>]*>|<\/cite>/g, '')
   txt = txt.replace(/```json|```/g, '').trim()
   const js = txt.indexOf('{'), je = txt.lastIndexOf('}')
   if (js !== -1 && je !== -1) txt = txt.slice(js, je + 1)
