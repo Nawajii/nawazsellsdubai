@@ -71,10 +71,15 @@ type Stage = 'entry' | 'survey' | 'area' | 'loading' | 'brief'
 type EntryMode = 'search' | 'upload' | 'explore'
 type Answers = { budget: string; goal: string; timeline: string }
 type Brief = {
-  project: string; developer: string; developer_score: number; developer_note: string
-  location: string; overview: string; price_sqft: string; gross_yield: string; net_yield: string
-  bear: string; base: string; bull: string; payment_plan: string; handover: string
-  golden_visa: boolean; verdict: 'BUY' | 'WATCH' | 'AVOID'; verdict_note: string; key_risk: string
+  project_name: string
+  developer_name: string
+  location: { community: string; district: string; address: string; overview: string; pros: string[]; facilities: any; optional_landmarks: any[] }
+  developer: { name: string; overview: string; projects_delivered: string[]; delivery_track_record: string; quality_assessment: string; existing_supply: string; resellability: string; absorption: string; serious_redflag: boolean; redflag_note: string }
+  project: { type: string; units: string; size_range: string; price_range: string; price_per_sqft: string; handover: string; usp: string; amenities: string[]; branding: string; lifestyle_positioning: string }
+  yield_analysis: { gross_yield_range: string; area_avg_yield: string; rental_demand: string; area_transactions_2024: string; absorption_rate: string; supply_pipeline: string; yield_outlook: string }
+  capital_appreciation: { price_2020: string; price_current: string; growth_pct: string; key_growth_drivers: string[]; bear_case: string; base_case: string; bull_case: string; appreciation_commentary: string }
+  risk_assessment: { location_risks: string[]; market_risks: string[]; overall_risk_level: string; risk_commentary: string }
+  sources: string[]
 }
 
 export default function Home() {
@@ -196,8 +201,6 @@ export default function Home() {
     scrollToTool()
   }
 
-  const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n)
-  const vc: Record<string, string> = { BUY: '#14B8A6', WATCH: '#C9A84C', AVOID: '#EF4444' }
   const N = '#060D1B', N2 = '#0C1628', G = '#C9A84C', T = '#14B8A6', C = '#F0EAD6', M = '#8A7F6E'
   const gb = '1px solid rgba(255,255,255,.07)'
 
