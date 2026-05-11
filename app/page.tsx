@@ -152,7 +152,7 @@ export default function Home() {
         body: JSON.stringify({ project: query, fileBase64: uploadedBase64 || null, fileMime: uploadedMime || null }),
       })
       const data = await res.json()
-      if (!res.ok || !data.project) {
+      if (!res.ok || !data.project_name) {
         alert('Could not generate brief. Please check your project name and try again.')
         setStage('entry')
         return
@@ -172,7 +172,7 @@ export default function Home() {
     if (digits.length < 5) { setPhoneError('Please enter a valid phone number.'); return }
     setPhoneError('')
     const fullPhone = `${countryCode}${digits}`
-    if (!brief || !brief.project) { alert('Brief data is missing.'); return }
+    if (!brief || !brief.project_name) { alert('Brief data is missing.'); return }
     fetch('/api/brief', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -446,7 +446,7 @@ export default function Home() {
                 <div>
                   <div style={{ textAlign:'center', padding:'48px 0 36px' }}>
                     <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:12 }}>Investment Brief Ready</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:42, fontWeight:300, marginBottom:8 }}>{brief.project}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:42, fontWeight:300, marginBottom:8 }}>{brief.project_name}</div>
                     <div style={{ fontSize:13, color:M, marginBottom:28 }}>{brief.location}</div>
                     <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 28px', background:`${vc[brief.verdict]}10`, border:`1px solid ${vc[brief.verdict]}`, marginBottom:8 }}>
                       <span style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>Analyst Verdict</span>
@@ -507,7 +507,7 @@ export default function Home() {
                   <div style={{ width:56, height:56, background:'rgba(20,184,166,.1)', border:`1px solid ${T}`, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px', fontSize:22 }}>✓</div>
                   <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:300, marginBottom:12 }}>Brief on its way.</div>
                   <p style={{ fontSize:13, color:M, maxWidth:380, margin:'0 auto 32px', lineHeight:1.8 }}>
-                    Your personalised investment brief for <strong style={{ color:C }}>{brief.project}</strong> is being generated and will arrive on your WhatsApp shortly.
+                    Your personalised investment brief for <strong style={{ color:C }}>{brief.project_name}</strong> is being generated and will arrive on your WhatsApp shortly.
                   </p>
                   <div style={{ padding:'20px 28px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.2)`, display:'inline-block', marginBottom:36 }}>
                     <p style={{ fontSize:12, color:T, marginBottom:8 }}>Want to discuss this investment personally?</p>
