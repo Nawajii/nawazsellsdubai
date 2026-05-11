@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
           brief: briefData,
           answers: answers || { budget: '', goal: '', timeline: '' },
           clientName,
-        })
+        }) as any
       )
       const filename = `brief_${clientName.replace(/\s+/g, '_')}_${Date.now()}`
       const pdfUrl = await uploadPDF(pdfBuffer as Buffer, filename)
