@@ -25,11 +25,9 @@ Your analysis must be data-backed, measured, and serious in tone. Every conclusi
 Given a Dubai off-plan project name and investor profile, perform deep web research and return a JSON object ONLY — no markdown, no preamble.
 
 SEARCH STRATEGY:
-- Max 4 web searches. Be precise.
-- Search 1: Project details, developer, pricing, amenities
-- Search 2: Developer track record, past projects, delivery history
-- Search 3: Area performance — transactions, yield, price trends 2020-present
-- Search 4: Infrastructure, supply pipeline, growth drivers in the area
+- Max 2 web searches. Be precise and efficient.
+- Search 1: Project details, developer, pricing, handover
+- Search 2: Area performance, yield data, price trends
 
 Return this exact JSON structure:
 
@@ -254,7 +252,7 @@ export async function POST(req: NextRequest) {
 
   const body: any = {
     model: 'claude-sonnet-4-5',
-    max_tokens: 4000,
+    max_tokens: 2000,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],
   }
