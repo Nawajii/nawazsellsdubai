@@ -33,7 +33,23 @@ const BRIEF_CONTENTS = [
   { glyph: '6', label: 'Golden Visa Eligibility', desc: 'Whether this project qualifies for the UAE 10-year Golden Visa at entry price.' },
 ]
 
-const LOAD_STEPS = ['Searching project database…','Evaluating developer track record…','Computing yield model…','Running 3-year scenarios…','Preparing your brief…']
+const COUNTRY_CODES = [
+  { code: '+971', country: 'AE', flag: '🇦🇪', name: 'UAE' },
+  { code: '+91', country: 'IN', flag: '🇮🇳', name: 'India' },
+  { code: '+44', country: 'GB', flag: '🇬🇧', name: 'UK' },
+  { code: '+1', country: 'US', flag: '🇺🇸', name: 'USA' },
+  { code: '+7', country: 'RU', flag: '🇷🇺', name: 'Russia' },
+  { code: '+966', country: 'SA', flag: '🇸🇦', name: 'Saudi Arabia' },
+  { code: '+974', country: 'QA', flag: '🇶🇦', name: 'Qatar' },
+  { code: '+965', country: 'KW', flag: '🇰🇼', name: 'Kuwait' },
+  { code: '+973', country: 'BH', flag: '🇧🇭', name: 'Bahrain' },
+  { code: '+968', country: 'OM', flag: '🇴🇲', name: 'Oman' },
+  { code: '+20', country: 'EG', flag: '🇪🇬', name: 'Egypt' },
+  { code: '+92', country: 'PK', flag: '🇵🇰', name: 'Pakistan' },
+  { code: '+33', country: 'FR', flag: '🇫🇷', name: 'France' },
+  { code: '+49', country: 'DE', flag: '🇩🇪', name: 'Germany' },
+  { code: '+86', country: 'CN', flag: '🇨🇳', name: 'China' },
+]
 
 const SURVEY = [
   { q: 'To weight your returns correctly — what range are you working with?', key: 'budget', options: ['Under AED 500K','AED 500K – 1M','AED 1M – 2M','AED 2M – 5M','Above AED 5M'] },
@@ -67,6 +83,9 @@ export default function Home() {
   const [gated, setGated] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [countryCode, setCountryCode] = useState('+971')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneError, setPhoneError] = useState('')
   const [cookieConsent, setCookieConsent] = useState<boolean|null>(null)
   const briefRef = useRef<HTMLDivElement>(null)
   const toolRef = useRef<HTMLDivElement>(null)
@@ -164,7 +183,8 @@ export default function Home() {
   function reset() {
     setStage('entry'); setProject(''); setUploadedFile(''); setUploadedBase64(''); setUploadedMime('')
     setSurveyStep(0); setAnswers({ budget:'', goal:'', timeline:'' }); setBrief(null); setGated(true)
-    setName(''); setPhone(''); scrollToTool()
+    setName(''); setPhone(''); setPhoneNumber(''); setCountryCode('+971'); setPhoneError('')
+    scrollToTool()
   }
 
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n)
@@ -434,72 +454,112 @@ export default function Home() {
           {/* BRIEF */}
           {stage === 'brief' && brief && (
             <div ref={briefRef} style={{ animation:'fadeIn .5s ease' }}>
-              <div style={{ padding:'14px 20px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.15)`, marginBottom:32, display:'flex', gap:24, flexWrap:'wrap' }}>
-                {[answers.budget,answers.goal,answers.timeline].filter(Boolean).map((a,i)=>(
-                  <span key={i} style={{ fontSize:11, color:T, letterSpacing:'.06em' }}>· {a}</span>
-                ))}
-              </div>
-              <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
-                <div>
-                  <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Personalised Investment Brief</div>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300 }}>{brief.project}</div>
-                  <div style={{ fontSize:13, color:M, marginTop:4 }}>{brief.location}</div>
-                </div>
-                <div style={{ padding:'7px 18px', fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', fontWeight:600, background:`${vc[brief.verdict]}15`, color:vc[brief.verdict], border:`1px solid ${vc[brief.verdict]}` }}>{brief.verdict}</div>
-              </div>
-              <p style={{ fontSize:13, color:M, lineHeight:1.9, marginBottom:28, borderLeft:`2px solid ${G}`, paddingLeft:18 }}>{brief.overview}</p>
-              <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
-                {[
-                  { label:'Gross Yield (Est.)', val:brief.gross_yield, sub:'Net yield: '+brief.net_yield },
-                  { label:'Price per sqft', val:brief.price_sqft, sub:'Handover: '+brief.handover },
-                  { label:'Developer', val:brief.developer, sub:stars(brief.developer_score)+' '+brief.developer_note, small:true },
-                  { label:'Payment Plan', val:brief.payment_plan, sub:brief.golden_visa?'✓ Golden Visa Eligible':'✗ Below Golden Visa threshold', subColor:brief.golden_visa?T:M, small:true },
-                ].map((c,i)=>(
-                  <div key={i} className="brief-card">
-                    <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{c.label}</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:c.small?20:28, color:G, fontWeight:400 }}>{c.val}</div>
-                    <div style={{ fontSize:11, color:(c as any).subColor||M, marginTop:6 }}>{c.sub}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:14 }}>3-Year Capital Appreciation Scenarios</div>
-              <div className="scen-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:28 }}>
-                {[{l:'Bear Case',v:brief.bear,c:'#EF4444'},{l:'Base Case',v:brief.base,c:G},{l:'Bull Case',v:brief.bull,c:T}].map((s,i)=>(
-                  <div key={i} className="sc-card">
-                    <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{s.l}</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:300, color:s.c }}>{s.v}</div>
-                  </div>
-                ))}
-              </div>
+
               {gated ? (
-                <div style={{ position:'relative' }}>
-                  <div style={{ filter:'blur(8px)', opacity:.4, pointerEvents:'none', userSelect:'none' }}>
-                    {['Analyst Verdict','Key Risk'].map((l,i)=>(
-                      <div key={i} style={{ padding:22, background:'rgba(255,255,255,.04)', border:gb, marginBottom:14 }}>
-                        <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M }}>{l}</div>
-                        <div style={{ height:14, background:'rgba(255,255,255,.07)', width:['80%','60%'][i], margin:'8px 0', borderRadius:2 }} />
-                        <div style={{ height:14, background:'rgba(255,255,255,.07)', width:['55%','40%'][i], borderRadius:2 }} />
+                /* ── GATE VIEW — only show project name + verdict ── */
+                <div>
+                  <div style={{ textAlign:'center', padding:'48px 0 36px' }}>
+                    <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:12 }}>Investment Brief Ready</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:42, fontWeight:300, marginBottom:8 }}>{brief.project}</div>
+                    <div style={{ fontSize:13, color:M, marginBottom:28 }}>{brief.location}</div>
+                    <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 28px', background:`${vc[brief.verdict]}10`, border:`1px solid ${vc[brief.verdict]}`, marginBottom:8 }}>
+                      <span style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>Analyst Verdict</span>
+                      <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:300, color:vc[brief.verdict] }}>{brief.verdict}</span>
+                    </div>
+                    <p style={{ fontSize:12, color:M, marginTop:12 }}>Your full analysis is ready — yield projections, developer rating, payment plan, appreciation scenarios, and key risk.</p>
+                  </div>
+
+                  {/* Blurred preview */}
+                  <div style={{ filter:'blur(6px)', opacity:.35, pointerEvents:'none', userSelect:'none', marginBottom:24 }}>
+                    <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
+                      {[1,2,3,4].map(i=>(
+                        <div key={i} style={{ padding:22, background:'rgba(255,255,255,.04)', border:gb }}>
+                          <div style={{ height:10, background:'rgba(255,255,255,.07)', width:'50%', borderRadius:2, marginBottom:10 }} />
+                          <div style={{ height:28, background:'rgba(255,255,255,.07)', width:'70%', borderRadius:2, marginBottom:8 }} />
+                          <div style={{ height:10, background:'rgba(255,255,255,.07)', width:'60%', borderRadius:2 }} />
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                      {[1,2,3].map(i=>(
+                        <div key={i} style={{ padding:20, background:'rgba(255,255,255,.04)', border:gb, textAlign:'center' }}>
+                          <div style={{ height:10, background:'rgba(255,255,255,.07)', width:'60%', margin:'0 auto 12px', borderRadius:2 }} />
+                          <div style={{ height:32, background:'rgba(255,255,255,.07)', width:'50%', margin:'0 auto', borderRadius:2 }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Gate form */}
+                  <div style={{ background:'rgba(12,22,40,.95)', border:`1px solid rgba(201,168,76,.25)`, padding:'36px', boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
+                    <div style={{ width:40, height:1, background:`rgba(201,168,76,.4)`, marginBottom:20 }} />
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, marginBottom:8 }}>Unlock your full brief.</div>
+                    <div style={{ fontSize:13, color:M, lineHeight:1.75, marginBottom:24 }}>Enter your WhatsApp number and we'll send the complete analysis directly to you.</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"
+                        style={{ padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13, width:'100%' }} />
+                      {/* Country code + number */}
+                      <div style={{ display:'flex', gap:8 }}>
+                        <select value={countryCode} onChange={e=>setCountryCode(e.target.value)}
+                          style={{ padding:'13px 12px', background:'#0C1628', border:gb, color:C, fontSize:13, cursor:'pointer', minWidth:130, fontFamily:'Inter,sans-serif' }}>
+                          {COUNTRY_CODES.map(c=>(
+                            <option key={c.code} value={c.code}>{c.flag} {c.code} {c.name}</option>
+                          ))}
+                        </select>
+                        <input value={phoneNumber} onChange={e=>{ setPhoneNumber(e.target.value); setPhoneError('') }}
+                          placeholder="WhatsApp number" type="tel"
+                          style={{ flex:1, padding:'13px 18px', background:'rgba(255,255,255,.04)', border: phoneError ? '1px solid #EF4444' : gb, color:C, fontSize:13 }} />
+                      </div>
+                      {phoneError && <p style={{ fontSize:11, color:'#EF4444', marginTop:-4 }}>{phoneError}</p>}
+                      <button onClick={submitLead} className="wa-btn" style={{ width:'100%', justifyContent:'center', padding:'14px 22px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Send My Brief to WhatsApp
+                      </button>
+                    </div>
+                    <p style={{ fontSize:10, color:'rgba(138,127,110,.5)', marginTop:14, lineHeight:1.6 }}>By submitting, you agree to our <a href="/privacy" style={{ color:T, textDecoration:'none' }}>Privacy Policy</a>. Your data will only be used to deliver this brief and for follow-up.</p>
+                  </div>
+                </div>
+
+              ) : (
+                /* ── UNLOCKED VIEW — full brief ── */
+                <div style={{ animation:'fadeIn .5s ease' }}>
+                  <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
+                    <div>
+                      <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Personalised Investment Brief</div>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300 }}>{brief.project}</div>
+                      <div style={{ fontSize:13, color:M, marginTop:4 }}>{brief.location}</div>
+                    </div>
+                    <div style={{ padding:'7px 18px', fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', fontWeight:600, background:`${vc[brief.verdict]}15`, color:vc[brief.verdict], border:`1px solid ${vc[brief.verdict]}` }}>{brief.verdict}</div>
+                  </div>
+                  <div style={{ padding:'14px 20px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.15)`, marginBottom:28, display:'flex', gap:24, flexWrap:'wrap' }}>
+                    {[answers.budget,answers.goal,answers.timeline].filter(Boolean).map((a,i)=>(
+                      <span key={i} style={{ fontSize:11, color:T, letterSpacing:'.06em' }}>· {a}</span>
+                    ))}
+                  </div>
+                  <p style={{ fontSize:13, color:M, lineHeight:1.9, marginBottom:28, borderLeft:`2px solid ${G}`, paddingLeft:18 }}>{brief.overview}</p>
+                  <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
+                    {[
+                      { label:'Gross Yield (Est.)', val:brief.gross_yield, sub:'Net yield: '+brief.net_yield },
+                      { label:'Price per sqft', val:brief.price_sqft, sub:'Handover: '+brief.handover },
+                      { label:'Developer', val:brief.developer, sub:stars(brief.developer_score)+' '+brief.developer_note, small:true },
+                      { label:'Payment Plan', val:brief.payment_plan, sub:brief.golden_visa?'✓ Golden Visa Eligible':'✗ Below Golden Visa threshold', subColor:brief.golden_visa?T:M, small:true },
+                    ].map((c,i)=>(
+                      <div key={i} className="brief-card">
+                        <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{c.label}</div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:c.small?20:28, color:G, fontWeight:400 }}>{c.val}</div>
+                        <div style={{ fontSize:11, color:(c as any).subColor||M, marginTop:6 }}>{c.sub}</div>
                       </div>
                     ))}
                   </div>
-                  <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg,rgba(6,13,27,.7) 0%,rgba(6,13,27,.98) 50%)', gap:16, padding:32 }}>
-                    <div style={{ width:40, height:1, background:'rgba(201,168,76,.4)', marginBottom:4 }} />
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, textAlign:'center' }}>One last step.</div>
-                    <div style={{ fontSize:13, color:M, textAlign:'center', maxWidth:380, lineHeight:1.75 }}>Your analyst verdict, key risks, and full brief are ready. Enter your WhatsApp and we'll send it to you directly.</div>
-                    <div className="gate-form" style={{ display:'flex', gap:10, width:'100%', maxWidth:500, flexWrap:'wrap', justifyContent:'center' }}>
-                      {[{v:name,s:setName,p:'Your name'},{v:phone,s:setPhone,p:'WhatsApp (+91 or +971…)'}].map((f,i)=>(
-                        <input key={i} value={f.v} onChange={e=>f.s(e.target.value)} placeholder={f.p} style={{ flex:1, minWidth:160, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13 }} />
-                      ))}
-                      <button onClick={submitLead} className="wa-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Send to WhatsApp
-                      </button>
-                    </div>
-                    <p style={{ fontSize:10, color:'rgba(138,127,110,.5)', textAlign:'center', maxWidth:380 }}>By submitting, you agree to our <a href="/privacy" style={{ color:T, textDecoration:'none' }}>Privacy Policy</a>. Your data will only be used to deliver this brief and for follow-up.</p>
+                  <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:14 }}>3-Year Capital Appreciation Scenarios</div>
+                  <div className="scen-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:28 }}>
+                    {[{l:'Bear Case',v:brief.bear,c:'#EF4444'},{l:'Base Case',v:brief.base,c:G},{l:'Bull Case',v:brief.bull,c:T}].map((s,i)=>(
+                      <div key={i} className="sc-card">
+                        <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{s.l}</div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:300, color:s.c }}>{s.v}</div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ) : (
-                <div style={{ animation:'fadeIn .5s ease' }}>
                   <div style={{ padding:22, background:'rgba(255,255,255,.04)', border:`1px solid ${vc[brief.verdict]}`, borderLeft:`3px solid ${vc[brief.verdict]}`, marginBottom:14 }}>
                     <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>Analyst Verdict — {brief.verdict}</div>
                     <div style={{ fontSize:13, lineHeight:1.85 }}>{brief.verdict_note}</div>
