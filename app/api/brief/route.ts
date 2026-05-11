@@ -171,14 +171,29 @@ export async function POST(req: NextRequest) {
 
   // ── Deliver PDF for already-generated brief ──
   if (briefData && clientName && clientPhone) {
-    try {
-      const reportNo = await getNextReportNumber()
+    const reportNo = await getNextReportNumber()
+    console.log('Report number generated:', reportNo)
 
-      // Get landmark distances
+    // Log to sheets immediately — don't wait for PDF
+    logReport({
+      reportNo,
+      clientName,
+      phone:    clientPhone,
+      project:  briefData.project_name || 'Unknown',
+      budget:   answers?.budget || '',
+      goal:     answers?.goal || '',
+      timeline: answers?.timeline || '',
+      sources:  briefData.sources || [],
+    }).catch(e => console.error('Sheet log error:', e))
+
+    // Generate and deliver PDF separately
+    try {
+      console.log('Getting landmarks...')
       const landmarks = await getLandmarkDistances(
         briefData.location?.address || `${briefData.project_name}, Dubai`,
         briefData.location?.optional_landmarks || []
       )
+      console.log('Landmarks done, rendering PDF...')
 
       const pdfBuffer = await renderToBuffer(
         createElement(BriefPDF, {
@@ -189,26 +204,18 @@ export async function POST(req: NextRequest) {
           landmarks,
         }) as any
       )
+      console.log('PDF rendered, uploading to Cloudinary...')
 
       const filename = `${reportNo}_${clientName.replace(/\s+/g,'_')}`
       const pdfUrl   = await uploadPDF(pdfBuffer as Buffer, filename)
+      console.log('PDF uploaded:', pdfUrl)
 
-      await Promise.all([
-        sendWhatsApp(clientPhone, clientName, briefData.project_name || briefData.project, pdfUrl),
-        logReport({
-          reportNo,
-          clientName,
-          phone:    clientPhone,
-          project:  briefData.project_name || briefData.project,
-          budget:   answers?.budget || '',
-          goal:     answers?.goal || '',
-          timeline: answers?.timeline || '',
-          sources:  briefData.sources || [],
-        }),
-      ])
+      await sendWhatsApp(clientPhone, clientName, briefData.project_name || briefData.project, pdfUrl)
+      console.log('WhatsApp sent')
     } catch (e) {
       console.error('PDF/delivery error:', e)
     }
+
     return NextResponse.json({ ok: true })
   }
 
