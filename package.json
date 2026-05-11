@@ -22,7 +22,9 @@
   "homepage": "https://github.com/Nawajii/nawazsellsdubai#readme",
   "type": "module",
   "dependencies": {
+    "@react-pdf/renderer": "^4.1.6",
     "@typeform/embed-react": "^4.6.0",
+    "cloudinary": "^2.6.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "next": "15.3.6",
