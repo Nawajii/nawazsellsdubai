@@ -106,17 +106,16 @@ export default function Home() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [phoneError, setPhoneError] = useState('')
 
+  const [sent, setSent] = useState(false)
+
   // Cookie
   const [cookieConsent, setCookieConsent] = useState<boolean | null>(null)
-
-  // Refs
   const briefRef = useRef<HTMLDivElement>(null)
   const toolRef  = useRef<HTMLDivElement>(null)
 
-  // ── Effects ──
+  // Refs
 
-  useEffect(() => {
-    const stored = localStorage.getItem('cookie_consent')
+  // ── Effects ──
     if (stored !== null) setCookieConsent(stored === 'true')
   }, [])
 
@@ -221,7 +220,7 @@ export default function Home() {
   }
 
   function reset() {
-    setStage('entry'); setBrief(null); setGated(true)
+    setStage('entry'); setBrief(null); setGated(true); setSent(false)
     setProject(''); setUploadedFile(''); setUploadedBase64(''); setUploadedMime('')
     setSurveyStep(0); setAnswers({ budget: '', goal: '', timeline: '' })
     setClientName(''); setCountryCode('+971'); setPhoneNumber(''); setPhoneError('')
@@ -567,57 +566,18 @@ export default function Home() {
                 </div>
 
               ) : (
-                /* UNLOCKED — full brief */
-                <div style={{ animation:'fadeIn .5s ease' }}>
-                  <div className="bh-r" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', paddingBottom:22, borderBottom:gb, marginBottom:28, flexWrap:'wrap', gap:12 }}>
-                    <div>
-                      <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:6 }}>Personalised Investment Brief</div>
-                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300 }}>{brief.project}</div>
-                      <div style={{ fontSize:13, color:M, marginTop:4 }}>{brief.location}</div>
-                    </div>
-                    <div style={{ padding:'7px 18px', fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', fontWeight:600, background:`${vc[brief.verdict]}15`, color:vc[brief.verdict], border:`1px solid ${vc[brief.verdict]}` }}>{brief.verdict}</div>
+                /* CONFIRMATION — no brief data shown on screen */
+                <div style={{ animation:'fadeIn .5s ease', textAlign:'center', padding:'60px 0' }}>
+                  <div style={{ width:56, height:56, background:'rgba(20,184,166,.1)', border:`1px solid ${T}`, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px', fontSize:22 }}>✓</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:300, marginBottom:12 }}>Brief on its way.</div>
+                  <p style={{ fontSize:13, color:M, maxWidth:380, margin:'0 auto 32px', lineHeight:1.8 }}>
+                    Your personalised investment brief for <strong style={{ color:C }}>{brief?.project}</strong> is being generated and will arrive on your WhatsApp shortly.
+                  </p>
+                  <div style={{ padding:'20px 28px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.2)`, display:'inline-block', marginBottom:36 }}>
+                    <p style={{ fontSize:12, color:T, marginBottom:4 }}>Want to discuss this investment personally?</p>
+                    <a href="https://wa.me/971563281781" target="_blank" className="cta-p" style={{ display:'inline-block', marginTop:8 }}>Book a Call with Nawaz</a>
                   </div>
-                  <div style={{ padding:'14px 20px', background:'rgba(20,184,166,.06)', border:`1px solid rgba(20,184,166,.15)`, marginBottom:28, display:'flex', gap:24, flexWrap:'wrap' }}>
-                    {[answers.budget,answers.goal,answers.timeline].filter(Boolean).map((a,i) => (
-                      <span key={i} style={{ fontSize:11, color:T, letterSpacing:'.06em' }}>· {a}</span>
-                    ))}
-                  </div>
-                  <p style={{ fontSize:13, color:M, lineHeight:1.9, marginBottom:28, borderLeft:`2px solid ${G}`, paddingLeft:18 }}>{brief.overview}</p>
-                  <div className="cards-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
-                    {[
-                      { label:'Gross Yield (Est.)', val:brief.gross_yield, sub:'Net yield: '+brief.net_yield },
-                      { label:'Price per sqft',     val:brief.price_sqft,  sub:'Handover: '+brief.handover },
-                      { label:'Developer',          val:brief.developer,   sub:stars(brief.developer_score)+' '+brief.developer_note, small:true },
-                      { label:'Payment Plan',       val:brief.payment_plan,sub:brief.golden_visa?'✓ Golden Visa Eligible':'✗ Below Golden Visa threshold', subColor:brief.golden_visa?T:M, small:true },
-                    ].map((c,i) => (
-                      <div key={i} className="brief-card">
-                        <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{c.label}</div>
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:c.small?20:28, color:G, fontWeight:400 }}>{c.val}</div>
-                        <div style={{ fontSize:11, color:(c as any).subColor||M, marginTop:6 }}>{c.sub}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:14 }}>3-Year Capital Appreciation Scenarios</div>
-                  <div className="scen-g" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:28 }}>
-                    {[{l:'Bear Case',v:brief.bear,c:'#EF4444'},{l:'Base Case',v:brief.base,c:G},{l:'Bull Case',v:brief.bull,c:T}].map((s,i) => (
-                      <div key={i} className="sc-card">
-                        <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>{s.l}</div>
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:300, color:s.c }}>{s.v}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ padding:22, background:'rgba(255,255,255,.04)', border:`1px solid ${vc[brief.verdict]}`, borderLeft:`3px solid ${vc[brief.verdict]}`, marginBottom:14 }}>
-                    <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>Analyst Verdict — {brief.verdict}</div>
-                    <div style={{ fontSize:13, lineHeight:1.85 }}>{brief.verdict_note}</div>
-                  </div>
-                  <div style={{ padding:22, background:'rgba(255,255,255,.04)', border:gb, marginBottom:20 }}>
-                    <div style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:M, marginBottom:8 }}>Key Risk</div>
-                    <div style={{ fontSize:13, color:M, lineHeight:1.85 }}>{brief.key_risk}</div>
-                  </div>
-                  <div style={{ padding:28, background:'rgba(20,184,166,.06)', border:`1px solid ${T}`, textAlign:'center', marginBottom:24 }}>
-                    <div style={{ fontSize:13, color:T, marginBottom:16 }}>Want a personalised analysis with your budget, timeline and goals?</div>
-                    <a href="https://wa.me/971563281781" target="_blank" className="cta-p">Book a Private Briefing with Nawaz</a>
-                  </div>
+                  <br/>
                   <button onClick={reset} style={{ background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em', textDecoration:'underline' }}>← Analyse another project</button>
                 </div>
               )}
