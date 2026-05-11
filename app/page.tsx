@@ -450,10 +450,10 @@ export default function Home() {
                   <div style={{ textAlign:'center', padding:'48px 0 36px' }}>
                     <div style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:T, marginBottom:12 }}>Investment Brief Ready</div>
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:42, fontWeight:300, marginBottom:8 }}>{brief.project_name}</div>
-                    <div style={{ fontSize:13, color:M, marginBottom:28 }}>{brief.location}</div>
-                    <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 28px', background:`${vc[brief.verdict]}10`, border:`1px solid ${vc[brief.verdict]}`, marginBottom:8 }}>
-                      <span style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>Analyst Verdict</span>
-                      <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:300, color:vc[brief.verdict] }}>{brief.verdict}</span>
+                    <div style={{ fontSize:13, color:M, marginBottom:28 }}>{brief.location?.community}{brief.location?.district ? ` · ${brief.location.district}` : ''} · Dubai</div>
+                    <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 28px', background:'rgba(201,168,76,.1)', border:`1px solid ${G}`, marginBottom:8 }}>
+                      <span style={{ fontSize:11, letterSpacing:'.15em', textTransform:'uppercase', color:M }}>Gross Yield (Est.)</span>
+                      <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:300, color:G }}>{brief.yield_analysis?.gross_yield_range || 'Ready'}</span>
                     </div>
                     <p style={{ fontSize:12, color:M, marginTop:12 }}>Your full analysis is ready — yield projections, developer rating, payment plan, appreciation scenarios, and key risk.</p>
                   </div>
