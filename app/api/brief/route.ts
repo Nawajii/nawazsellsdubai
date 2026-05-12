@@ -251,8 +251,8 @@ export async function POST(req: NextRequest) {
   }
 
   const body: any = {
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2000,
+    model: 'claude-sonnet-4-5',
+    max_tokens: 3500,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],
   }
