@@ -140,6 +140,7 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
         broadcast_name: `brief_${Date.now()}`,
         receivers: [{
           whatsappNumber: cleanPhone,
+          phoneNumber: cleanPhone,
           customParams: [
             { name: '1', value: name },
             { name: '2', value: project },
