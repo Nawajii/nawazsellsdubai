@@ -120,7 +120,8 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
   const watiToken = process.env.WATI_API_TOKEN
   if (!watiUrl || !watiToken) { console.warn('WATI not configured'); return }
 
-  const cleanPhone = phone.replace(/[\s\-\+]/g, '')
+  const cleanPhone = phone.replace(/[\s\-]/g, '').replace(/^\+/, '')
+  console.log('WATI phone — raw:', phone, '— clean:', cleanPhone)
 
   try {
     await fetch(`${watiUrl}/api/v1/addContact/${cleanPhone}`, {
