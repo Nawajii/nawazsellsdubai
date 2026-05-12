@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
-import { v2 as cloudinary } from 'cloudinary'
+import { put } from '@vercel/blob'
 import { BriefPDF } from './pdf'
 import { getNextReportNumber, logReport } from './sheets'
 import { getLandmarkDistances } from './maps'
 
 export const maxDuration = 120 // seconds
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-  api_key:    process.env.CLOUDINARY_API_KEY!,
-  api_secret: process.env.CLOUDINARY_API_SECRET!,
-})
 
 // ── Cache ──────────────────────────────────────────────────────────────────
 const briefCache = new Map<string, any>()
@@ -116,8 +110,18 @@ CRITICAL: Return pure JSON only. Do NOT include any <cite> tags, citation marker
 
 // ── Upload PDF to Cloudinary ───────────────────────────────────────────────
 async function uploadPDF(buffer: Buffer, filename: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
+  // Re-configure on each call to ensure env vars are read fresh
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:    process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  })
+  console.log('Cloudinary upload config:', {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key_present: !!process.env.CLOUDINARY_API_KEY,
+    api_secret_present: !!process.env.CLOUDINARY_API_SECRET,
+  })
+  return new Promise((resolve, reject) => {    const stream = cloudinary.uploader.upload_stream(
       { resource_type: 'raw', folder: 'nawazsellsdubai/briefs', public_id: filename, format: 'pdf', overwrite: true },
       (err, result) => { if (err) reject(err); else resolve(result!.secure_url) }
     )
