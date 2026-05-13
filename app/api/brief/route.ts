@@ -120,10 +120,8 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
   const watiToken = process.env.WATI_API_TOKEN
   if (!watiUrl || !watiToken) { console.warn('WATI not configured'); return }
 
-  const cleanPhone = phone.replace(/[\s\-]/g, '')
-  // Ensure + prefix for WATI
-  const watiPhone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`
-  console.log('WATI phone — raw:', phone, '— wati:', watiPhone)
+  const cleanPhone = phone.replace(/\D/g, '')
+  console.log('WATI phone — local digits:', cleanPhone)
 
   try {
     await fetch(`${watiUrl}/api/v1/addContact/${cleanPhone}`, {
@@ -159,7 +157,7 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
 
 // ── Main handler ───────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const { project, fileBase64, fileMime, clientName, clientPhone, briefData, answers } = await req.json()
+  const { project, fileBase64, fileMime, clientName, clientPhone, clientPhoneLocal, briefData, answers } = await req.json()
 
   // ── Deliver PDF for already-generated brief ──
   if (briefData && clientName && clientPhone) {
@@ -202,7 +200,7 @@ export async function POST(req: NextRequest) {
       const pdfUrl   = await uploadPDF(pdfBuffer as Buffer, filename)
       console.log('PDF uploaded:', pdfUrl)
 
-      await sendWhatsApp(clientPhone, clientName, briefData.project_name || 'Project', pdfUrl)
+      await sendWhatsApp(clientPhoneLocal || clientPhone, clientName, briefData.project_name || 'Project', pdfUrl)
     } catch (e) {
       console.error('PDF/delivery error:', e)
     }
