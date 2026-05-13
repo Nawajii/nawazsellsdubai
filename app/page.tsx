@@ -185,6 +185,7 @@ export default function Home() {
         project: 'already_generated',
         clientName,
         clientPhone: fullPhone,
+        clientPhoneLocal: phoneNumber.replace(/\D/g, ''),
         briefData: brief,
         answers,
       }),
