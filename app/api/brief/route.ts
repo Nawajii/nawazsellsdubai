@@ -140,9 +140,9 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
         broadcast_name: `brief_${Date.now()}`,
         header: {
           type: 'document',
-          media: {
-            url: pdfUrl,
-            fileName: `Investment_Brief_${project.replace(/\s+/g, '_')}.pdf`,
+          document: {
+            link: pdfUrl,
+            filename: `Investment_Brief_${project.replace(/\s+/g, '_')}.pdf`,
           },
         },
         parameters: [
