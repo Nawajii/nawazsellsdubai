@@ -138,6 +138,13 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
       body: JSON.stringify({
         template_name: 'brief_delivery',
         broadcast_name: `brief_${Date.now()}`,
+        header: {
+          type: 'document',
+          document: {
+            link: pdfUrl,
+            filename: `Investment_Brief_${project.replace(/\s+/g, '_')}.pdf`,
+          },
+        },
         parameters: [
           { name: 'name',         value: name },
           { name: 'investment',   value: project },
@@ -201,7 +208,8 @@ export async function POST(req: NextRequest) {
       const verdictMap: Record<string, string> = { Low: 'Strong Buy', Moderate: 'Watch', Elevated: 'Cautious' }
       const verdict    = verdictMap[riskLevel] || 'See Brief'
       const grossYield = briefData.yield_analysis?.gross_yield_range    || 'See Brief'
-      await sendWhatsApp(clientPhoneLocal || clientPhone, clientName, briefData.project_name || 'Project', pdfUrl, verdict, grossYield)
+      const watiPhone = (clientPhone || '').replace(/^\+/, '')
+      await sendWhatsApp(watiPhone, clientName, briefData.project_name || 'Project', pdfUrl, verdict, grossYield)
     } catch (e) {
       console.error('PDF/delivery error:', e)
     }
