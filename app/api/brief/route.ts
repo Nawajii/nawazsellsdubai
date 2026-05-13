@@ -115,7 +115,7 @@ async function uploadPDF(buffer: Buffer, filename: string): Promise<string> {
 }
 
 // ── Send via WATI ──────────────────────────────────────────────────────────
-async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl: string) {
+async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl: string, verdict: string, grossYield: string) {
   const watiUrl   = process.env.WATI_API_URL
   const watiToken = process.env.WATI_API_TOKEN
   if (!watiUrl || !watiToken) { console.warn('WATI not configured'); return }
@@ -138,10 +138,18 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
       body: JSON.stringify({
         template_name: 'brief_delivery',
         broadcast_name: `brief_${Date.now()}`,
+        header: {
+          type: 'document',
+          media: {
+            url: pdfUrl,
+            fileName: `Investment_Brief_${project.replace(/\s+/g, '_')}.pdf`,
+          },
+        },
         parameters: [
           { name: '1', value: name },
           { name: '2', value: project },
-          { name: '3', value: pdfUrl },
+          { name: '3', value: verdict },
+          { name: '4', value: grossYield },
         ],
       }),
     })
@@ -196,7 +204,11 @@ export async function POST(req: NextRequest) {
       const pdfUrl   = await uploadPDF(pdfBuffer as Buffer, filename)
       console.log('PDF uploaded:', pdfUrl)
 
-      await sendWhatsApp(clientPhoneLocal || clientPhone, clientName, briefData.project_name || 'Project', pdfUrl)
+      const riskLevel  = briefData.risk_assessment?.overall_risk_level || ''
+      const verdictMap: Record<string, string> = { Low: 'Strong Buy', Moderate: 'Watch', Elevated: 'Cautious' }
+      const verdict    = verdictMap[riskLevel] || 'See Brief'
+      const grossYield = briefData.yield_analysis?.gross_yield_range    || 'See Brief'
+      await sendWhatsApp(clientPhoneLocal || clientPhone, clientName, briefData.project_name || 'Project', pdfUrl, verdict, grossYield)
     } catch (e) {
       console.error('PDF/delivery error:', e)
     }
