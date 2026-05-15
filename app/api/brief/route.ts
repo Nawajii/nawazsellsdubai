@@ -132,14 +132,14 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
   } catch (e) { console.error('WATI addContact:', e) }
 
   try {
-    const res = await fetch(`${watiUrl}/api/v1/sendTemplateMessage?whatsappNumber=${cleanPhone}`, {
+    const res = await fetch(`${watiUrl}/api/v2/sendTemplateMessage?whatsappNumber=${cleanPhone}`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${watiToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        template_name: 'brief_delivery',
+        template_name: 'investment_brief_ready',
         broadcast_name: `brief_${Date.now()}`,
         parameters: [
-          { name: 'header',      value: pdfUrl },
+          { name: 'pdfLink',     value: pdfUrl },
           { name: 'name',        value: name },
           { name: 'investment',  value: project },
           { name: 'verdict',     value: verdict },
