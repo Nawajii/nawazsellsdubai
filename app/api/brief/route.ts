@@ -138,28 +138,12 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
       body: JSON.stringify({
         template_name: 'investment_brief_ready_v2',
         broadcast_name: `brief_${Date.now()}`,
-        components: [
-          {
-            type: 'header',
-            parameters: [
-              {
-                type: 'document',
-                document: {
-                  link: pdfUrl,
-                  filename: `Investment_Brief_${project.replace(/\s+/g, '_')}.pdf`,
-                },
-              },
-            ],
-          },
-          {
-            type: 'body',
-            parameters: [
-              { type: 'text', text: name },
-              { type: 'text', text: project },
-              { type: 'text', text: verdict },
-              { type: 'text', text: grossYield },
-            ],
-          },
+        parameters: [
+          { name: 'name',        value: name },
+          { name: 'investment',  value: project },
+          { name: 'verdict',     value: verdict },
+          { name: 'gross_yield', value: grossYield },
+          { name: 'pdfLink',     value: pdfUrl },
         ],
       }),
     })
