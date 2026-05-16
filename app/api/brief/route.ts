@@ -136,14 +136,14 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
       method: 'POST',
       headers: { 'Authorization': `Bearer ${watiToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        template_name: 'investment_brief_ready_v2',
+        template_name: 'investment_brief_ready_version3',
         broadcast_name: `brief_${Date.now()}`,
         parameters: [
           { name: 'name',        value: name },
           { name: 'investment',  value: project },
           { name: 'verdict',     value: verdict },
           { name: 'gross_yield', value: grossYield },
-          { name: 'pdfLink',     value: pdfUrl },
+          { name: 'pdfLink',    value: pdfUrl },
         ],
       }),
     })
