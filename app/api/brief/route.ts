@@ -153,6 +153,34 @@ async function sendWhatsApp(phone: string, name: string, project: string, pdfUrl
   } catch (e) { console.error('WATI send:', e) }
 }
 
+// ── Follow-up message (2 min delay) ────────────────────────────────────────
+async function sendFollowUp(phone: string, name: string, project: string) {
+  const watiUrl   = process.env.WATI_API_URL
+  const watiToken = process.env.WATI_API_TOKEN
+  if (!watiUrl || !watiToken) return
+
+  const cleanPhone = phone.replace(/\D/g, '')
+  await new Promise(resolve => setTimeout(resolve, 2 * 60 * 1000)) // 2 minutes
+
+  try {
+    const res = await fetch(`${watiUrl}/api/v2/sendTemplateMessage?whatsappNumber=${cleanPhone}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${watiToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        template_name: 'private_briefing_followup',
+        broadcast_name: `followup_${Date.now()}`,
+        parameters: [
+          { name: 'name',       value: name },
+          { name: 'investment', value: project },
+        ],
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) console.error('Follow-up WATI error:', data)
+    else console.log('Follow-up sent')
+  } catch (e) { console.error('Follow-up send error:', e) }
+}
+
 // ── Main handler ───────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const { project, fileBase64, fileMime, clientName, clientPhone, clientPhoneLocal, briefData, answers } = await req.json()
@@ -204,6 +232,8 @@ export async function POST(req: NextRequest) {
       const grossYield = briefData.yield_analysis?.gross_yield_range    || 'See Brief'
       const watiPhone = (clientPhone || '').replace(/^\+/, '')
       await sendWhatsApp(watiPhone, clientName, briefData.project_name || 'Project', pdfUrl, verdict, grossYield)
+      // Fire follow-up non-blocking — 2 min delay
+      sendFollowUp(watiPhone, clientName, briefData.project_name || 'Project')
     } catch (e) {
       console.error('PDF/delivery error:', e)
     }
