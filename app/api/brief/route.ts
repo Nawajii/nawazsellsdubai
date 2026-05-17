@@ -183,9 +183,31 @@ async function sendFollowUp(phone: string, name: string, project: string) {
 
 // ── Main handler ───────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const { project, fileBase64, fileMime, clientName, clientPhone, clientPhoneLocal, briefData, answers } = await req.json()
+  const { project, fileBase64, fileMime, clientName, clientPhone, clientPhoneLocal, briefData, answers, isEnquiry } = await req.json()
 
   // ── Deliver PDF for already-generated brief ──
+  // ── Enquiry route (no brief, personal consultation) ──────────────────────
+  if (isEnquiry && clientName && clientPhone) {
+    try {
+      const watiPhone = (clientPhone || '').replace(/^\+/, '')
+      logReport({
+        reportNo: 'NEW ENQUIRY',
+        clientName,
+        phone: clientPhone,
+        project: 'Personal Consultation Request',
+        budget: answers?.budget || '',
+        goal: answers?.goal || '',
+        timeline: answers?.timeline || '',
+        sources: ['N/A'],
+      }).catch(e => console.error('Enquiry sheet error:', e))
+      await sendFollowUp(watiPhone, clientName, 'your ideal Dubai investment')
+      console.log('Enquiry logged and follow-up sent')
+    } catch (e) {
+      console.error('Enquiry error:', e)
+    }
+    return NextResponse.json({ ok: true })
+  }
+
   if (briefData && clientName && clientPhone) {
     const reportNo = await getNextReportNumber()
     console.log('Report number generated:', reportNo)
