@@ -67,7 +67,7 @@ const COUNTRY_CODES = [
   { code: '+86',  flag: '🇨🇳', name: 'China' },
 ]
 
-type Stage = 'entry' | 'survey' | 'area' | 'loading' | 'brief'
+type Stage = 'entry' | 'survey' | 'area' | 'loading' | 'brief' | 'enquiry'
 type EntryMode = 'search' | 'upload' | 'explore'
 type Answers = { budget: string; goal: string; timeline: string }
 type Brief = {
@@ -91,6 +91,7 @@ export default function Home() {
   const [uploadedBase64, setUploadedBase64] = useState('')
   const [uploadedMime, setUploadedMime] = useState('')
   const [surveyStep, setSurveyStep] = useState(0)
+  const [enquirySent, setEnquirySent] = useState(false)
   const [answers, setAnswers] = useState<Answers>({ budget: '', goal: '', timeline: '' })
   const [stepIdx, setStepIdx] = useState(0)
   const [brief, setBrief] = useState<Brief | null>(null)
@@ -142,7 +143,7 @@ export default function Home() {
     if (surveyStep < SURVEY.length - 1) {
       setSurveyStep(s => s + 1)
     } else {
-      entryMode === 'explore' ? setStage('area') : runBrief(updated)
+      entryMode === 'explore' ? setStage('enquiry') : runBrief(updated)
     }
   }
 
@@ -196,6 +197,27 @@ export default function Home() {
     }).catch(e => console.error('Delivery error:', e))
     setSent(true)
     setGated(false)
+  }
+
+  function submitEnquiry() {
+    if (!clientName.trim()) { alert('Please enter your name.'); return }
+    const digits = waPhone || phoneNumber.replace(/\D/g, '')
+    if (!waPhone && digits.length < 5) { setPhoneError('Please enter a valid phone number.'); return }
+    setPhoneError('')
+    const fullPhone = waPhone ? `+${waPhone}` : `${countryCode}${digits}`
+    fetch('/api/brief', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project: 'enquiry',
+        clientName,
+        clientPhone: fullPhone,
+        clientPhoneLocal: phoneNumber.replace(/\D/g, ''),
+        answers,
+        isEnquiry: true,
+      }),
+    }).catch(e => console.error('Enquiry error:', e))
+    setEnquirySent(true)
   }
 
   function reset() {
@@ -428,6 +450,60 @@ export default function Home() {
                 ))}
               </div>
               <button onClick={() => setStage('survey')} style={{ marginTop:28, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>← Back</button>
+            </div>
+          )}
+
+          {/* ENQUIRY */}
+          {stage === 'enquiry' && (
+            <div style={{ animation:'fadeIn .4s ease', maxWidth:520, margin:'0 auto' }}>
+              {!enquirySent ? (
+                <>
+                  <p style={{ fontSize:10, letterSpacing:'.3em', textTransform:'uppercase', color:T, marginBottom:16 }}>Personal Consultation</p>
+                  <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(24px,3.5vw,42px)', fontWeight:300, lineHeight:1.15, marginBottom:12 }}>
+                    Let Nawaz find the<br /><em style={{ color:G }}>right opportunity for you.</em>
+                  </h2>
+                  <p style={{ fontSize:13, color:M, marginBottom:32, lineHeight:1.7 }}>
+                    Share your details and Nawaz will personally get in touch within 24 hours with a curated recommendation based on your goals.
+                  </p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    <input value={clientName} onChange={e => setClientName(e.target.value)}
+                      placeholder="Your name" type="text"
+                      style={{ padding:'13px 18px', background:'rgba(255,255,255,.04)', border:gb, color:C, fontSize:13 }} />
+                    {!waPhone && (
+                      <>
+                        <div style={{ display:'flex', gap:8 }}>
+                          <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                            style={{ padding:'13px 10px', background:'#0C1628', border:gb, color:C, fontSize:13, cursor:'pointer', minWidth:140 }}>
+                            {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code} {c.name}</option>)}
+                          </select>
+                          <input value={phoneNumber} onChange={e => { setPhoneNumber(e.target.value); setPhoneError('') }}
+                            placeholder="WhatsApp number" type="tel"
+                            style={{ flex:1, padding:'13px 18px', background:'rgba(255,255,255,.04)', border:phoneError?'1px solid #EF4444':gb, color:C, fontSize:13 }} />
+                        </div>
+                        {phoneError && <p style={{ fontSize:11, color:'#EF4444' }}>{phoneError}</p>}
+                      </>
+                    )}
+                    <button onClick={submitEnquiry}
+                      style={{ padding:'14px 24px', background:G, color:'#060D1B', fontSize:11, letterSpacing:'.12em', textTransform:'uppercase', fontWeight:600, border:'none', cursor:'pointer' }}>
+                      Request Personal Consultation
+                    </button>
+                  </div>
+                  <button onClick={() => setStage('survey')} style={{ marginTop:20, background:'none', border:'none', color:M, fontSize:12, cursor:'pointer', letterSpacing:'.08em' }}>← Back</button>
+                </>
+              ) : (
+                <div style={{ textAlign:'center', padding:'48px 0', animation:'fadeIn .4s ease' }}>
+                  <div style={{ width:56, height:56, borderRadius:'50%', background:'rgba(201,168,76,.1)', border:'1px solid rgba(201,168,76,.3)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px', fontSize:24 }}>✓</div>
+                  <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(22px,3vw,36px)', fontWeight:300, marginBottom:12 }}>
+                    You're on Nawaz's list.
+                  </h2>
+                  <p style={{ fontSize:13, color:M, lineHeight:1.7, maxWidth:360, margin:'0 auto 28px' }}>
+                    Nawaz will personally get in touch with you within 24 hours with a curated investment opportunity based on your goals.
+                  </p>
+                  <button onClick={reset} style={{ background:'none', border:'1px solid rgba(201,168,76,.3)', color:G, padding:'10px 24px', fontSize:11, letterSpacing:'.1em', textTransform:'uppercase', cursor:'pointer' }}>
+                    Start Over
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
